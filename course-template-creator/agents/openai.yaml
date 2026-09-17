@@ -1,0 +1,4 @@
+interface:
+  display_name: 课程模板创建器
+  short_description: 按 V1 数据契约生成课程模板目录和 ZIP
+  default_prompt: 使用 $course-template-creator 根据课程内容生成课程模板目录及可导入的 ZIP，但不要上传。
