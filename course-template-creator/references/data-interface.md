@@ -100,8 +100,8 @@ defaultOpen: true
 
 包内不能声明 `seriesId`、`ownerId`、`ownerExternalId`、`templateId`、`businessRevision`、`_status`、`deletedAt`、`status`、`lifecycleStatus`、`enabled`，也不能包含日程、快照、报名、提交、评价或发布参数。
 
-配置 YAML 不使用未知字段、重复 key、alias、anchor、merge key、自定义 tag 或多文档；作为普通素材的 `.yaml` 不按配置解析。外层课程包路径使用相对路径和 Unicode NFC；禁止绝对路径、`.`、`..`、反斜杠逃逸和符号链接。压缩附件仅作为不透明文件保存，不递归展开。
+配置 YAML 不使用未知字段、重复 key、alias、anchor、merge key、自定义 tag 或多文档；作为普通素材的 `.yaml` 不按配置解析。外层课程包路径使用相对路径和 Unicode NFC；禁止绝对路径、`.`、`..`、反斜杠逃逸和符号链接。压缩附件仅作为不透明文件保存，不递归展开。外层课程 ZIP 仅使用 stored 或 deflate，所有文件的 CRC、压缩大小和解压大小须在 local header 与 central directory 中一致；禁止 ZIP64、加密和 data descriptor（general-purpose flag 的 bit 0、bit 3 均不得设置）。
 
 ## 交付边界
 
-skill 同时保留普通目录并生成同名 ZIP。压缩目录内的内容，使 `course.yaml` 直接位于 ZIP 根目录；不要把同一目录再套一层，也不要加入系统隐藏文件。skill 不调用导入接口或上传 ZIP。
+skill 同时保留普通目录并生成同名 ZIP。可使用当前环境可用的任意打包能力，但不得假设存在特定命令行工具；压缩目录内的内容，使 `course.yaml` 直接位于 ZIP 根目录；不要把同一目录再套一层，也不要加入系统隐藏文件。无法满足本文件规定的 ZIP 元数据约束时不得生成 ZIP。skill 不调用导入接口或上传 ZIP。
