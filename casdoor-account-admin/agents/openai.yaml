@@ -1,0 +1,4 @@
+interface:
+  display_name: Casdoor 账号管理
+  short_description: 选租户后批量增删改查 Casdoor 账号（对话确认，OAuth 登录）
+  default_prompt: 使用 $casdoor-account-admin 按对话完成选租户、选功能、预览确认后再操作 Casdoor 账号。通过 scripts/casdoor.mjs 调用 API，不要手写 curl，不要把 token 读进对话。

@@ -1,0 +1,1 @@
+{"ok":true,"account":{"owner":"built-in","name":"admin","displayName":"超级超管","groups":[],"isForbidden":false,"email":"admin@example.com","phone":"12345678910","createdTime":"2026-06-22T03:15:18Z","type":"normal-user"},"organization":{"owner":"admin","name":"built-in","displayName":"超级租户"}}

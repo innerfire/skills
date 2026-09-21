@@ -1,0 +1,20 @@
+casdoor-account-admin
+
+Usage:
+  node casdoor.mjs login [--no-open] [--json]
+  node casdoor.mjs logout [--json]
+  node casdoor.mjs whoami [--json]
+  node casdoor.mjs config [--json]
+  node casdoor.mjs orgs [--with-counts] [--json]
+  node casdoor.mjs groups --owner <org> [--json]
+  node casdoor.mjs names --prefix stu --count 3 [--json]
+  node casdoor.mjs users list --owner <org> [--exact name|--query kw|--all] [--json]
+  node casdoor.mjs users get --owner <org> --name <name> [--json]
+  node casdoor.mjs users add --owner <org> --name <name> [--groups a,b] [--yes] [--json]
+  node casdoor.mjs users add-batch --owner <org> --prefix stu --count 3 [--groups a,b] [--csv path] [--yes] [--json]
+  node casdoor.mjs users update --owner <org> --name <name> [--display-name ...] [--email ...] [--phone ...] [--groups a,b|--clear-groups] [--enabled true|false] [--yes] [--json]
+  node casdoor.mjs users reset-password --owner <org> --name <name> [--password ...] [--yes] [--json]
+  node casdoor.mjs users delete --owner <org> --name <name> [--yes] [--json]
+  node casdoor.mjs users delete-batch --owner <org> (--prefix stu|--names a,b) [--yes] [--json]
+
+Write operations require --yes. Omit it to dry-run / preview.

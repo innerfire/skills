@@ -1,0 +1,1 @@
+{"ok":true,"owner":"demo","groups":[],"password":"if123456","summary":{"success":0,"failed":3},"results":[{"name":"abt001","ok":false,"error":"Username already exists","code":"already_exists"},{"name":"abt002","ok":false,"error":"Username already exists","code":"already_exists"},{"name":"abt003","ok":false,"error":"Username already exists","code":"already_exists"}]}
