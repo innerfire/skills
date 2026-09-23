@@ -1,0 +1,1 @@
+{"ok":true,"endpoint":"http://127.0.0.1:8000","clientId":"db9af54714f47d49025f","redirectUri":"http://127.0.0.1:18766/callback","payloadOrigin":"http://127.0.0.1:3000","scopes":["openid","profile","email"],"checklist":"Redirect URL 必须包含 http://127.0.0.1:18766/callback"}

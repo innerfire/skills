@@ -1,0 +1,66 @@
+{
+  "scenario": "learning",
+  "courseTitle": "AI 入门实践",
+  "chapters": [
+    {
+      "id": "018f0000-0000-7000-8000-000000000151",
+      "title": "认识问题",
+      "open": true,
+      "tasks": [
+        {
+          "id": "018f0000-0000-7000-8000-000000000201",
+          "kind": "milestone",
+          "name": "基础任务",
+          "description": "完成练习",
+          "open": true,
+          "currentSubmission": null
+        },
+        {
+          "id": "018f0000-0000-7000-8000-000000000202",
+          "kind": "milestone",
+          "name": "关闭任务",
+          "description": "教师未开放",
+          "open": false,
+          "currentSubmission": null
+        },
+        {
+          "id": "018f0000-0000-7000-8000-000000000203",
+          "kind": "milestone",
+          "name": "已交任务",
+          "description": "已有成果",
+          "open": true,
+          "currentSubmission": {
+            "versionNo": 1,
+            "comment": "上一版",
+            "files": [{ "id": "018f0000-0000-7000-8000-000000000231", "name": "old.pdf", "size": 12 }]
+          }
+        }
+      ]
+    },
+    {
+      "id": "018f0000-0000-7000-8000-000000000152",
+      "title": "未开放章节",
+      "open": false,
+      "tasks": [
+        {
+          "id": "018f0000-0000-7000-8000-000000000204",
+          "kind": "milestone",
+          "name": "锁章任务",
+          "description": "章关闭",
+          "open": true,
+          "currentSubmission": null
+        }
+      ]
+    }
+  ],
+  "courseTasks": [
+    {
+      "id": "018f0000-0000-7000-8000-000000000301",
+      "kind": "course_report",
+      "name": "课程总体报告",
+      "description": "一门课一份",
+      "open": true,
+      "currentSubmission": null
+    }
+  ]
+}

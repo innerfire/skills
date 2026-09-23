@@ -1,0 +1,22 @@
+{
+  "items": [
+    {
+      "scheduleId": "018f0000-0000-7000-8000-000000000101",
+      "name": "正在学习的课",
+      "derivedStatus": "learning",
+      "teacherDisplayName": "张老师"
+    },
+    {
+      "scheduleId": "018f0000-0000-7000-8000-000000000102",
+      "name": "待开课",
+      "derivedStatus": "pending",
+      "teacherDisplayName": "张老师"
+    },
+    {
+      "scheduleId": "018f0000-0000-7000-8000-000000000103",
+      "name": "已学完",
+      "derivedStatus": "completed",
+      "teacherDisplayName": "李老师"
+    }
+  ]
+}

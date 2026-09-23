@@ -1,0 +1,4 @@
+interface:
+  display_name: 学生成果提交
+  short_description: 学生登录后预览并提交里程碑和实验报告
+  default_prompt: 使用 $student-outcome-submitter 以学生身份提交里程碑或实验报告。通过 scripts/submit.mjs 调用 API，先预览，用户确认后再加 --yes。不要手写 curl，不要把 token 读进对话。
