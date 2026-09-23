@@ -1,0 +1,4 @@
+interface:
+  display_name: 火光 Skill 仓库同步
+  short_description: 检查 innerfire/skills 线上仓库，发现并安全安装/更新火光内部 skill（对话确认）
+  default_prompt: 使用 $if-skills 检查 github.com/innerfire/skills 最新状态，列出新 skill 与可更新 skill，经用户确认后用 scripts/sync.mjs 安全安装/更新，不要跳过 diff 校验，新 skill 不要默认全装。
