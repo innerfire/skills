@@ -1,0 +1,4 @@
+interface:
+  display_name: 教师成果下载
+  short_description: 教师登录后准备批量下载学生里程碑和实验报告
+  default_prompt: 使用 $teacher-outcome-downloader 以教师身份登录。通过 scripts/download.mjs 调用，当前只做登录。不要手写 curl，不要把 token 读进对话，不要复用学生端或管理端 session。

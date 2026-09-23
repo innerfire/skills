@@ -9,6 +9,7 @@ Innerfire 的 Agent Skills 仓库。兼容 [Agent Skills](https://agentskills.io
 | [`casdoor-account-admin`](casdoor-account-admin/) | 选租户后对话编排 Casdoor 账号增删改查、批量建号、重置密码；业务角色对应 Group。 |
 | [`course-template-creator`](course-template-creator/) | 按课程模板 V1 数据契约交互式生成课程目录和可导入 ZIP（不负责上传）。 |
 | [`student-outcome-submitter`](student-outcome-submitter/) | 学生登录后提交里程碑和实验报告（课程总体报告）。先预览，确认后再上传。 |
+| [`teacher-outcome-downloader`](teacher-outcome-downloader/) | 教师登录后准备批量下载学生里程碑和实验报告。当前只验收登录。 |
 
 ## 安装
 
@@ -26,6 +27,7 @@ npx skills add innerfire/skills
 npx skills add innerfire/skills --skill casdoor-account-admin
 npx skills add innerfire/skills --skill course-template-creator
 npx skills add innerfire/skills --skill student-outcome-submitter
+npx skills add innerfire/skills --skill teacher-outcome-downloader
 ```
 
 常用参数：
