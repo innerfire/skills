@@ -13,6 +13,17 @@ command -v zip >/dev/null 2>&1 || {
 
 template_dir=$(cd "$1" && pwd -P)
 template_zip="${template_dir}.zip"
+
+non_ascii_files=$(
+  cd "$template_dir"
+  find . -type f | LC_ALL=C grep '[^ -~]' || true
+)
+
+if [ -n "$non_ascii_files" ]; then
+  printf 'error: template contains non-ASCII filenames (forbidden for OSS CopyObject compatibility):\n%s\n' "$non_ascii_files" >&2
+  exit 1
+fi
+
 temp_dir=$(mktemp -d "${template_zip}.tmp.XXXXXX")
 trap 'rm -rf "$temp_dir"' EXIT HUP INT TERM
 
