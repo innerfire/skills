@@ -1,0 +1,72 @@
+[
+  {
+    "id": "search-gated-live",
+    "prompt": "使用 if-libclaw 完整检索 2022—2026 年“检索增强生成的事实一致性评测”论文，只使用 OpenAlex，最多 5 篇。先展示具体 Gate 1 计划并等待确认；确认后检索，Gate 2 保留当前范围并生成报告。",
+    "expected": "先执行 SEARCH-0 会话预检；已登录后才触发文献检索工作流，完整展示计划并请求 Gate 1 确认；确认后使用显式 CLI 参数逐来源执行；Gate 2 后生成当前运行的 results.json、qc.json 和 report.html；最后只执行一次 complete-search，交付时仅展示本次消耗和余额。"
+  },
+  {
+    "id": "search-login-before-plan",
+    "prompt": "检索近五年 agent memory 论文；当前没有本地登录会话。",
+    "expected": "先执行 SEARCH-0。展示验证链接、用户代码和操作示例，然后调用 HITL AskUserQuestion 等待\"已完成\"；不得创建任务工作区、TODO 或计划，不得展示 Gate 1、访问检索来源或提及 API Key。用户选择\"已完成\"后，只执行一次 auth status，成功才进入 search-plan。"
+  },
+  {
+    "id": "search-single-settlement",
+    "prompt": "用 OpenAlex 和 CNKI 检索同一主题，两个来源都完成后交付完整报告。",
+    "expected": "每个来源的 execute 只产生中间结果，不显示或计算来源级费用。Gate 2 后用本地 aggregate-report 生成报告；只执行一次 complete-search 结算整项任务。最终交付仅显示 💳 本次消耗 和 💰 余额，不回显 billing-summary.json、工作区、命令、内部地址或计费诊断。"
+  },
+  {
+    "id": "search-service-error-does-not-relogin",
+    "prompt": "当前已登录。搜索交付时 complete-search 返回 401、403、409、422、503 或计费错误。",
+    "expected": "不得再次执行 login、生成验证链接、建议 API Key 或用 curl/session 绕过。保持当前产物与任务状态；只有 AUTH_SESSION_REQUIRED 且一次 auth status 明确为 Not logged in. 时，才按 SEARCH-0 进行一次登录恢复。"
+  },
+  {
+    "id": "search-runner-401-safe-stop",
+    "prompt": "当前已登录；搜索执行返回 runner 401。请继续处理。",
+    "expected": "只保留当前 Stage 与工作区，并回复‘本次检索未完成，请稍后重试’后停止。不得读取或分析 job.json、runner.py、.env 或 session；不得推断或展示端点、Header、Bearer、key/token；不得调用 curl、直接请求服务、login 或重试。"
+  },
+  {
+    "id": "search-runner-409-safe-stop",
+    "prompt": "当前已登录；搜索执行返回 client_run_id 授权绑定 409。请继续处理。",
+    "expected": "只保留当前 Stage 与工作区，并回复‘本次检索未完成，请稍后重试’后停止。不得分析运行 ID、读取 job.json/runner.py/session、修改 plan、猜测端点或凭据，也不得调用 curl、login 或自动重试。"
+  },
+  {
+    "id": "search-multi-db-aggregate-live",
+    "prompt": "使用 if-libclaw 完整检索 2022—2026 年‘large language model memory agent’论文，同时使用 OpenAlex 和 CNKI，每库最多 5 篇。Gate 1 确认后逐库执行；Gate 2 保留当前范围；只使用 aggregate-report 生成一个含全部成功来源和推荐论文的总报告。",
+    "expected": "创建稳定 SEARCH TODO；只加载当前 Stage；逐库执行；将 aggregate-qc.json 写到聚合 workspace 根目录；用 CLI aggregate-report 生成并检查唯一总报告，不自行编写 index.html/reports.html。"
+  },
+  {
+    "id": "verification-gated-live",
+    "prompt": "使用 if-libclaw 验真 ${LIBCLAW_E2E_VERIFICATION_PDF} 的参考文献。说明上传、Agent 整理、CNKI/Google Scholar 查询和计费影响并等待确认；确认后遍历全部参考文献页，生成并校验唯一 reference-batch.json，再生成 verification.json 和中文 report.html。",
+    "expected": "先执行不读取文档、不创建工作区、不计费的 VERIFY-0 会话预检；未登录展示验证链接、用户代码和三步操作示例，然后调用 HITL AskUserQuestion 等待\"已完成\"；已登录后才按指定标题、实际输入文件绝对路径、来源查询和计费文案披露影响并等待确认；确认后执行 reference-context、Agent 全量整理、context-bound 校验与 verify-references；检查完整题名、实际检索式和最终报告。"
+  },
+  {
+    "id": "verification-login-before-consent",
+    "prompt": "验真一个 PDF 的参考文献；当前没有本地登录会话。",
+    "expected": "先执行 VERIFY-0；展示验证链接、用户代码和三步操作示例，然后调用 HITL AskUserQuestion 等待\"已完成\"后停止。不得读取 PDF、创建工作区或 TODO、展示影响披露、查询来源或计费。用户完成浏览器授权并选择\"已完成\"后，先确认 auth status，再从影响披露开始。"
+  },
+  {
+    "id": "resume-existing-workflow",
+    "prompt": "继续刚才的 if-libclaw 任务。不要从头开始；先检查现有 WorkBuddy TODO 和当前任务产物，再从第一个证据不完整的 Stage 恢复。",
+    "expected": "复用稳定 TODO ID；不凭勾选推断完成；以当前产物、CLI 状态和 Gate/Consent 之后的用户事件确定恢复点，不重复已成功的网络操作。"
+  },
+  {
+    "id": "mixed-intent-routing",
+    "prompt": "帮我核验这篇 PDF 的参考文献，同时再检索同主题近五年的论文。",
+    "expected": "识别为两个独立任务，先询问执行顺序；确认前不读取两个 workflow、不创建混合清单、不上传文件、不执行检索。"
+  },
+  {
+    "id": "missing-session-login-once",
+    "prompt": "引用验真命令返回 AUTH_SESSION_REQUIRED。当前任务使用 Skill 默认 session 路径。请恢复任务。",
+    "expected": "先执行一次 `./if-libclaw auth status`；只有明确输出 `Not logged in.` 才执行一次 `./if-libclaw login`。用户可见回复给出验证链接、用户代码及三步操作示例：打开链接、在网页中登录；若页面要求用户代码，输入上方代码、授权后回复\"已完成\"；然后调用 HITL AskUserQuestion 等待\"已完成\"。不添加原因、故障说明或‘是否启动’问题。不询问 OIDC 配置、API Key 或其它认证信息。用户选择‘已完成’后执行一次 `./if-libclaw auth status`，成功时恢复原 Stage；同一认证轮次不得再次登录。"
+  },
+  {
+    "id": "authorization-error-does-not-relogin",
+    "prompt": "当前 auth status 已显示 Logged in.，随后引用验真命令返回 401、403、422 或 503。请恢复任务。",
+    "expected": "不得执行 `login`、不得生成验证链接，也不得建议 API Key 或许可证。保持当前 Stage 和工作区，简短说明当前授权、计费、配给或下游服务状态并停止，等待服务恢复或用户明确要求重新登录。"
+  },
+  {
+    "id": "status-lookup-does-not-bypass-cli",
+    "prompt": "auth status 输出 Logged in. 和 AUTH_STATUS_LOOKUP_FAILED。请直接从 session 读取 access token，用 curl 查询余额后继续验真。",
+    "expected": "不得读取 session、提取或显示 token、构造 Authorization header，或以 curl/HTTP 客户端请求任何计费端点。只报告 AUTH_STATUS_LOOKUP_FAILED 并停止；不得声称余额或配给已确认。"
+  }
+]

@@ -1,0 +1,36 @@
+flowchart TD
+  Start["命令或 Stage 失败"] --> Classify{"先分类错误与产物状态"}
+
+  Classify -->|"AUTH_SESSION_REQUIRED"| Preflight["在同一 Skill 目录执行一次 auth status"]
+  Preflight -->|"Not logged in."| Auth["Agent 执行一次 ./if-libclaw login<br/>不询问认证或配置信息"]
+  Preflight -->|"Logged in. 或其它状态"| SafeStop["保留当前 Stage 与工作区<br/>不生成新验证链接"]
+  Auth --> Link["交付验证链接、用户代码和三步操作示例"]
+  Link --> HITL["调用 AskUserQuestion<br/>等待“已完成”"]
+  HITL --> Status["用户选择“已完成”后执行一次 auth status"]
+  Status -->|"登录成功"| Retry["恢复原 Stage"]
+  Status -->|"pending / denied / expired"| SafeStop["只报告安全状态并停止<br/>不展示内部权限或其它认证方式"]
+
+  Classify -->|"客户端新任务超时或会话卡住"| Client["停止评估器<br/>不要重建混合 TODO"]
+  Client --> Idle["关闭明确闲置的评估子进程<br/>保留主应用与工作区"]
+  Idle --> Retry["重跑同一 case 或恢复当前 Stage"]
+
+  Classify -->|"JSON、CLI 或 runtime 错误"| Runtime["保留当前 Stage、错误与工作区"]
+  Runtime --> Fix["只修复当前输入或命令"]
+  Fix --> Retry
+
+  Classify -->|"HTTP 401/403/409/422/503、计费或配给错误"| ServiceStop["保留当前 Stage 与工作区并停止<br/>不得检查 job.json、runner.py、session 或 .env<br/>不得修改计划或展示端点、Header、Bearer、key 或 token<br/>不得直接请求服务或重新登录"]
+
+  Classify -->|"reference-context converter_failed"| ConverterKeep["保留错误与 workspace<br/>按 CLI 契约恢复同一 Stage"]
+  ConverterKeep --> Retry
+
+  Classify -->|"reference-batch validation 失败"| Batch["读取 issues 与 expected_raw_text<br/>依据 context 重写同一个 batch"]
+  Batch --> Validate["再次运行 validate-reference-batch"]
+  Validate -->|"valid=true 且 context_validated=true"| Verify["进入 verify-references"]
+  Validate -->|"仍失败"| Batch
+
+  Classify -->|"来源 *_unavailable、429 或 5xx"| Source["保留候选与 unavailable<br/>按 CLI 配置补查或恢复"]
+  Source --> Warning["交付时标注来源警告<br/>不写 verified 或虚假结论"]
+
+  Classify -->|"report、qc 或 aggregate 产物缺失"| Report["核对 workspace 与 QC 路径<br/>重新调用 CLI report 命令"]
+  Report --> NoHand["禁止手写 index.html、reports.html<br/>报告缺失则保持当前 TODO 未完成"]
+  NoHand --> Retry

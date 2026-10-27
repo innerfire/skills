@@ -1,0 +1,27 @@
+{
+  "naturalLanguageRequest": "Run a real Playwright browser search on ACS Publications",
+  "normalizedQuery": "catalyst",
+  "planning": {
+    "searchPlan": {
+      "searchTermLanguage": [
+        "en"
+      ],
+      "enSearchTerms": [
+        {
+          "role": "subject",
+          "value": [
+            "catalyst"
+          ],
+          "synonyms": [
+            "catalysis"
+          ]
+        }
+      ],
+      "publicationStartDate": "2020-01-01",
+      "publicationEndDate": "2025-12-31",
+      "databases": [
+        "acs"
+      ]
+    }
+  }
+}

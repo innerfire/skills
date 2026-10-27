@@ -1,0 +1,24 @@
+{
+  "version": "reference-query/v1",
+  "document_sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+  "extraction_scope": {
+    "start_page": 9,
+    "end_page": 9,
+    "processed_pages": [9],
+    "references_per_page": [
+      {"page": 9, "count": 1}
+    ]
+  },
+  "references": [
+    {
+      "id": "ref-1",
+      "raw_text": "Center for AI Safety, Scale AI, and HLE Contributors Consortium. (2026). A benchmark of expert-level academic questions to assess AI capabilities. Nature.",
+      "title": "A benchmark of expert-level academic questions to assess AI capabilities",
+      "authors": ["Center for AI Safety", "Scale AI", "HLE Contributors Consortium"],
+      "year": 2026,
+      "locations": [
+        {"page": 9, "block_id": "page-9-text"}
+      ]
+    }
+  ]
+}
