@@ -18,15 +18,21 @@ if-libclaw <command> [flags]
 
 ### `login`、`auth status` 与 `auth logout`
 
-`login` 使用 OAuth 2.0 Device Authorization Grant。标准 Skill 调用先清除 `LIBCLAW_OIDC_ISSUER`、`LIBCLAW_OIDC_CLIENT_ID`、`LIBCLAW_OIDC_AUDIENCE` 三个遗留覆盖值，以使用随包的内置 OIDC 配置。CLI 通过 OIDC Discovery 获取设备授权端点；验证地址和用户代码由身份服务响应返回，CLI 不自行拼接或改写；Agent 面向用户展示验证链接、用户代码与固定操作示例，然后调用 HITL `AskUserQuestion` 等待“已完成”。CLI 保存短期待授权状态、尝试打开浏览器，然后立即退出；不会在终端轮询或要求输入账号密码。用户完成浏览器操作后只执行一次 `auth status`，成功时自动恢复原任务。CLI 是公开客户端，绝不接受、保存或要求 client secret。
+客户端 HITL 工具名以 `SKILL.md` 为准：`AskUserQuestion` 的同名示例均可替换为等价结构化工具，无此能力则等待新的对话回复。首次会话预检若已 `Logged in.`，可选账户查询失败不触发重登；用户网页确认后的复查若有 `AUTH_STATUS_LOOKUP_FAILED`，按认证 Stage 暂停；已完成报告的最终交付则可继续交付，未知余额如实显示。
 
-Skill/Agent 的恢复行为固定为：CLI 使用发行版内置的公开客户端配置；Agent 直接从 Skill 目录执行 `./if-libclaw login`，读取 `Verification URL:` 与 `User code:`，向用户交付验证链接、用户代码和固定操作示例，随后调用客户端 HITL 工具 `AskUserQuestion` 等待“已完成”。不得先询问用户是否拥有 OIDC 配置、API Key 或其它认证信息。用户选择“已完成”后，Agent 执行一次 `./if-libclaw auth status`，成功时自动恢复原任务。相关环境变量只供部署者覆盖，不是面向普通用户的问答选项。
+CLI 使用发行版内置的公开客户端配置。`login` 默认使用 OAuth 2.0 Authorization Code + PKCE（S256）打开网页登录。已有有效 Token 时直接输出 `Logged in.`，不重新授权；Token 临近到期先自动续期。缺少会话或 refresh token 已明确失效时才创建网页登录，临时网络或服务错误不会清空会话或自动重登。
+
+CLI 先启动仅监听 `127.0.0.1:18451` 的短时回调进程，打印 `Verification URL:`，尝试打开本机浏览器，然后立即退出。浏览器不可自动打开时，Agent 仍展示该链接供用户点击。网页完成登录和授权后显示“网页授权已完成，请返回任务回复‘已完成’”；回调不会向网页返回 Token，也不会自动恢复业务任务。
+
+Agent 必须展示验证链接与三步操作示例，随后调用 HITL 工具 `AskUserQuestion` 等待“已完成”。用户确认后只执行一次 `auth status`，由 CLI 交换授权码、保存会话并确认 `Logged in.` 后恢复任务。默认没有设备确认码；只有显式 `--method device` 的远程终端兼容流程才显示本次返回的 `User code:`。CLI 是公开客户端，不接收 client secret。
 
 ```bash
+./if-libclaw auth status
+# 只有 Not logged in. 时：
 ./if-libclaw login
+# 网页授权完成，并回复/选择“已完成”后：
 ./if-libclaw auth status
 ./if-libclaw auth logout
-# 或：./if-libclaw logout
 ```
 
 | `login` 标志 | 默认值 | 环境变量覆盖 | 说明 |
@@ -34,9 +40,14 @@ Skill/Agent 的恢复行为固定为：CLI 使用发行版内置的公开客户�
 | `--issuer` | *（随包内置）* | `LIBCLAW_OIDC_ISSUER` | 仅供部署覆盖。 |
 | `--client-id` | *（随包内置）* | `LIBCLAW_OIDC_CLIENT_ID` | 内置公开/native client ID；仅供部署覆盖。 |
 | `--audience` | *（随包内置）* | `LIBCLAW_OIDC_AUDIENCE` | 内置 access token audience；仅供部署覆盖。 |
-| `--scopes` | `openid profile email offline_access` | — | 空格分隔的 OIDC scopes；`offline_access` 用于续期。 |
+| `--scopes` | `openid profile email offline_access` | — | OIDC scopes，`offline_access` 用于续期。 |
+| `--method` | `browser` | — | `browser` 为授权码 + PKCE；`device` 供明确需要的远程终端兼容使用。 |
+| `--callback-port` | `18451` | — | 本机回调端口，需与管理员登记的 URI 完全一致。 |
+| `--no-open` | `false` | — | 仅显示链接，不自动打开浏览器。 |
 
-这里的 scopes 仅用于 OIDC 登录协议，不是 `citation.verify` 等运行时业务权限；Agent 不应把它们展示为用户需要提供或选择的授权配置。
+管理员在对应公开客户端应用启用 **Authorization Code**、**Refresh Token**，登记精确回调 URI `http://127.0.0.1:18451/callback`。修改端口后也须登记对应 URI；端口占用返回 `OIDC_CALLBACK_PORT_BUSY`，不得自动改用未登记地址。浏览器与 CLI 必须运行在同一台电脑；SSH/容器使用者需要管理员明确选择兼容流程。PKCE 默认流程不需要登录页的 Device login 入口。
+
+这里的 scopes 用于 OIDC 登录协议，不是运行时业务权限，不要求普通用户填写认证配置。登录、续期和状态查询都不创建计费事件。
 
 #### 运行时认证模式
 
@@ -57,11 +68,13 @@ Skill/Agent 的恢复行为固定为：CLI 使用发行版内置的公开客户�
 
 #### 状态、退出与配给
 
-`auth status` 未找到本地会话时输出 `Not logged in.` 并成功退出；若存在待完成 Device Flow，它只检查一次并立即报告 `Login pending.`、批准、拒绝或过期，不会持续轮询。否则由 CLI 在内部使用 Bearer access token 查询账户状态，并显示非秘密的登录状态、到期时间、身份、组织、配给、`Remaining credits` 和可选 `Pending credits`；wallet 总额不是用户可用余额，不会作为余额展示。CLI 不会打印 access、refresh、ID token 或 device code。`LIBCLAW_CATALOG_BILLING_URL` 仅供部署覆盖；`LIBCLAW_CATALOG_BILLING_TIMEOUT_SECONDS` 默认 `5` 秒，可设置为 `1` 到 `30`。`Provisioning: not provisioned` 只是状态报告：`login`、`auth status` 和运行时不会自动创建组织、账户、credit 或任何配给记录。
+`auth status` 支持互斥的 `--billing-start <任务绝对路径>` 与 `--billing-finish <同一任务绝对路径>`；不带标志时不写计费记录。前者记录首个余额，后者等 1 秒后计算差值，均不扣款。
+
+`auth status` 先验证本地 Token 可用性并在需要时续期；确实没有可用会话时输出 `Not logged in.`。若网页登录尚无回调，输出 `Login pending.`；回调已完成时单次交换授权码。显式设备授权仍单次检查状态。否则由 CLI 在内部使用 Bearer access token 查询账户状态，并显示非秘密的登录状态、到期时间、身份、组织、配给、`Remaining credits` 和可选 `Pending credits`；wallet 总额不是用户可用余额，不会作为余额展示。CLI 不会打印 access、refresh、ID token 或 device code。`LIBCLAW_CATALOG_BILLING_URL` 仅供部署覆盖；`LIBCLAW_CATALOG_BILLING_TIMEOUT_SECONDS` 默认 `5` 秒，可设置为 `1` 到 `30`。`Provisioning: not provisioned` 只是状态报告：`login`、`auth status` 和运行时不会自动创建组织、账户、credit 或任何配给记录。
 
 Agent 仅可调用本 CLI 查询上述状态；不得读取 session 文件取得 token、构造 Bearer 请求，或用 curl/其他 HTTP 客户端直接调用 Catalog-Billing。`AUTH_STATUS_LOOKUP_FAILED` 表示 CLI 未能完成可信状态查询，必须原样报告并停止；不得以旁路请求替代该结果或宣称余额已确认。
 
-`auth logout`（或 `logout`）会通过 OIDC discovery 尽力通知 provider，然后无论远端结果如何都删除本地正式会话和待授权 Device Flow 状态；远端退出失败只会产生警告。远端调用只使用 client ID 和 refresh token，不发送 access 或 ID token。
+`auth logout`（或 `logout`）会通过 OIDC discovery 尽力通知 provider，然后无论远端结果如何都删除本地正式会话和待授权状态和短期回调结果；远端退出失败只会产生警告。远端调用只使用 client ID 和 refresh token，不发送 access 或 ID token。
 
 #### JWT rollout 与当前限制
 
@@ -71,9 +84,9 @@ CLI 未设置认证模式时使用 JWT。生产 Telemetry 设置 `LIBCLAW_JWT_AU
 
 `generate-report` 与 `aggregate-report` 是纯本地报告命令，不请求 telemetry、不读取 API Key，也不产生计费。转换服务、Google Scholar 和 OpenAlex 都使用当前登录会话的 Bearer；不会发送、读取或回退到旧 if-libclaw API Key、converter key 或 Scholar key。一次完整引用验真只在最终 `verify-references` 成功报告的 finish-run 结算 1 个 `libclaw_verification / verification_run` usage event；转换、来源查询与重试不单独记账。一次完整文献检索只在全部来源结果已终态且完成交付时，由 `complete-search` 结算 1 个任务级 usage event；逐库 `execute`、报告生成与重试不单独记账。
 
-完成的 `complete-search` 与 `verify-references` 会在任务 workspace 根目录写入私有 `billing-summary.json`。其中只有服务显示名称、数量、状态和服务端确认的 `chargedCredits`；它没有 token、钱包、Lago 事件、内部地址或价格输入。仅当状态为 `settled` 才可展示本次消耗；`pending` 或 `unavailable` 时不得猜测金额。Skill 最终交付只读取该安全摘要，并额外执行一次 `auth status` 展示最新 `Remaining credits`；不能用两次余额之差计算本次消耗。
+用户可见的本次消耗使用任务前后余额差，不依赖 `chargedCredits` 或钱包流水回执。在 Gate/Consent 已确认、任务工作区已创建后、第一次业务操作前执行 `auth status --billing-start "$TASK_WORKSPACE"`，CLI 将首次账户与余额保存为私有基线。完成扣费与报告后执行 `auth status --billing-finish "$TASK_WORKSPACE"`，CLI 等待 1 秒后查询余额，并将“首次余额 − 完成后余额”写为根目录 `billing-summary.json` 的 `consumedCredits`，`source=balance_difference`、`status=observed`；0 是有效值。两次余额缺失、账户不同或差值为负时显示 unavailable。首次基线和已经生成的有效差值不随恢复重算。摘要不含凭据、钱包 ID 或内部地址；最终余额独立采用本次成功查询值。并发消费或充值会影响余额差，因此它是任务时间范围内的余额变化，不是逐笔账单金额。旧完成命令产生的回执摘要仅是内部兼容产物，交付时不采用它计算本次消耗。
 
-只有 `auth status` 明确输出 `Not logged in.` 时，Agent 才执行一次 `login`，交付验证链接、用户代码和操作示例，并调用 `AskUserQuestion` 等待“已完成”。业务命令返回 `AUTH_SESSION_REQUIRED` 时先在同一 Skill 目录执行一次 `auth status`；只有该检查明确输出 `Not logged in.` 才进入登录流程。HTTP 401/403/422/503、余额、配给、计费、版本或下游服务错误都不得触发 `login` 或生成新的验证链接。
+只有 `auth status` 明确输出 `Not logged in.` 时，Agent 才执行一次 `login`，交付验证链接和操作示例（仅显式设备授权实际返回用户代码时附上），并调用 `AskUserQuestion` 等待“已完成”。业务命令返回 `AUTH_SESSION_REQUIRED` 时先在同一 Skill 目录执行一次 `auth status`；只有该检查明确输出 `Not logged in.` 才进入登录流程。HTTP 401/403/422/503、余额、配给、计费、版本或下游服务错误都不得触发 `login` 或生成新的验证链接。
 
 ---
 
@@ -92,7 +105,7 @@ CLI 未设置认证模式时使用 JWT。生产 Telemetry 设置 `LIBCLAW_JWT_AU
 |------|--------|-------------|------|
 | `--api-key` | *（legacy_api_key 模式必填）* | `LIBCLAW_API_KEY` | legacy 模式的授权 API Key；`jwt` 模式使用本地会话，不读取或发送此值。 |
 | `--telemetry-url` | `https://libclaw.innerfire.ai:22943` | `LIBCLAW_TELEMETRY_URL` | 遥测服务地址 |
-| `--skill-version` | `0.3.4-dev` | `LIBCLAW_DEV_VERSION` | 运行时版本标签 |
+| `--skill-version` | `0.3.7` | `LIBCLAW_DEV_VERSION` | 运行时版本标签 |
 | `--installation-id` | `runtime-probe` | `LIBCLAW_INSTALLATION_ID` | 安装标识 |
 | `--machine-id` | *（主机名）* | `LIBCLAW_MACHINE_ID` | 机器标识 |
 | `--databases` | `openalex` | — | 逗号分隔的数据库 ID |
@@ -116,7 +129,7 @@ CLI 未设置认证模式时使用 JWT。生产 Telemetry 设置 `LIBCLAW_JWT_AU
 | `--json` | `false` | — | 输出机器可读的 JSON 摘要 |
 | `--api-key` | *（legacy_api_key 模式可选）* | `LIBCLAW_API_KEY` | 仅 legacy 模式提供时查询本地 skill 版本；`jwt` 模式跳过该 API-key 查询。 |
 | `--telemetry-url` | `https://libclaw.innerfire.ai:22943` | `LIBCLAW_TELEMETRY_URL` | 遥测服务地址 |
-| `--skill-version` | `0.3.4-dev` | `LIBCLAW_DEV_VERSION` | 本地 skill 版本标签 |
+| `--skill-version` | `0.3.7` | `LIBCLAW_DEV_VERSION` | 本地 skill 版本标签 |
 
 **输出示例：**
 
@@ -172,7 +185,7 @@ export PIP_INDEX_URL="https://<your-pypi-mirror>/simple"
 |------|--------|-------------|------|
 | `--api-key` | *（legacy_api_key 模式必填）* | `LIBCLAW_API_KEY` | legacy 模式的授权 API Key；`jwt` 模式使用本地会话，不读取或发送此值。 |
 | `--telemetry-url` | `https://libclaw.innerfire.ai:22943` | `LIBCLAW_TELEMETRY_URL` | 遥测服务地址 |
-| `--skill-version` | `0.3.4-dev` | `LIBCLAW_DEV_VERSION` | 运行时版本标签 |
+| `--skill-version` | `0.3.7` | `LIBCLAW_DEV_VERSION` | 运行时版本标签 |
 | `--installation-id` | `runtime-prepare` | `LIBCLAW_INSTALLATION_ID` | 安装标识 |
 | `--machine-id` | *（主机名）* | `LIBCLAW_MACHINE_ID` | 机器标识 |
 | `--plan-file` | *（必填）* | — | Plan JSON 文件路径 |
@@ -208,7 +221,7 @@ export PIP_INDEX_URL="https://<your-pypi-mirror>/simple"
 |------|--------|-------------|------|
 | `--api-key` | *（legacy_api_key 模式必填）* | `LIBCLAW_API_KEY` | legacy 模式的授权 API Key；`jwt` 模式使用本地会话，不读取或发送此值。 |
 | `--telemetry-url` | `https://libclaw.innerfire.ai:22943` | `LIBCLAW_TELEMETRY_URL` | 遥测服务地址 |
-| `--skill-version` | `0.3.4-dev` | `LIBCLAW_DEV_VERSION` | 运行时版本标签 |
+| `--skill-version` | `0.3.7` | `LIBCLAW_DEV_VERSION` | 运行时版本标签 |
 | `--installation-id` | `runtime-execute` | `LIBCLAW_INSTALLATION_ID` | 安装标识 |
 | `--machine-id` | *（主机名）* | `LIBCLAW_MACHINE_ID` | 机器标识 |
 | `--plan-file` | *（必填）* | — | Plan JSON 文件路径 |
@@ -232,7 +245,9 @@ export PIP_INDEX_URL="https://<your-pypi-mirror>/simple"
 
 ### `complete-search`
 
-在所有计划来源都已有终态 `results.json`、并且 Gate 2 已决定交付方式后执行一次。它是搜索任务唯一的最终结算入口：重复执行同一个任务会复用稳定的完成标识，服务端据此保持幂等；不得按数据库分别结算或自行以余额差计算费用。
+在所有计划来源都已有终态 `results.json`、并且 Gate 2 已决定交付方式后执行一次。它是搜索任务唯一的最终结算入口：重复执行同一个任务会复用稳定的完成标识，服务端据此保持幂等；不得按数据库分别结算；消费展示交由上述任务级余额记录命令计算。
+
+检索和引用验真的最终结算响应成功但消费回执仍不可用时，CLI 等待 1 秒，再用同一个 run token 和原请求重试一次。已获得有效消费回执时不等待；重试仍无金额时保留安全状态，不推算费用。
 
 完整报告交付：
 

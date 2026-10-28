@@ -26,13 +26,12 @@
 
 用户选择只交付原始结果时，将 `--delivery` 改为 `raw-results`，不传 `--report-path`。该命令是唯一的最终结算入口；不得按数据库相加、扫描旧 run 或自行计算费用。
 6. 若完成命令返回 `AUTH_SESSION_REQUIRED`，只执行一次 `./if-libclaw auth status`；只有明确输出 `Not logged in.` 才按 `SEARCH-0` 的单次登录与 HITL 流程恢复，然后重试同一条完成命令一次。其它错误均不得触发登录。命令在结算暂不可用时仍会保留安全摘要；已完成的报告或原始结果仍可交付。
-7. 只从 `$TASK_WORKSPACE/billing-summary.json` 读取本次任务的安全计费摘要；它**不是正式交付物，不得链接、回显原始 JSON、文件名、回执状态或服务端诊断，也不得当作报告列出**。
-8. 从当前 Skill 目录只执行一次 `./if-libclaw auth status`，只采纳其中的 `Remaining credits` 与可选 `Pending credits`；不得把诊断行、内部地址或完整命令输出带入交付回复。
+7. 只从 `$TASK_WORKSPACE/billing-summary.json` 读取本次任务的安全计费摘要（必须在下一步 `--billing-finish` 完成后重新读取）；它**不是正式交付物，不得链接、回显原始 JSON、文件名、回执状态或服务端诊断，也不得当作报告列出**。
+8. 从当前 Skill 目录只执行一次 `./if-libclaw auth status --billing-finish "$TASK_WORKSPACE"`，由 CLI 等待 1 秒后查询余额并更新任务根目录的安全摘要；只采纳其中的 `Remaining credits` 与可选 `Pending credits`；不得把诊断行、内部地址或完整命令输出带入交付回复。
 9. 在交付末尾加入简洁的 `## 💳 计费`：
-   - `billing-summary.json` 为 `settled` 时，只显示 `💳 本次消耗：<chargedCredits> credits` 与最新 `💰 余额：<Remaining credits> credits`；消耗必须取自安全回执，绝不以余额差值计算。
-   - 回执为 `pending` 时，只显示 `💳 本次消耗：待确认` 与 `💰 余额：暂不可用`。
-   - 回执为 `unavailable` 时，只显示 `💳 本次消耗：暂不可用` 与 `💰 余额：暂不可用`。
-   - 若回执已 `settled` 但这一次 `auth status` 输出 `AUTH_STATUS_LOOKUP_FAILED`，仍显示已确认的本次消耗与 `💰 余额：暂不可用`。
+   - 安全摘要为 `source=balance_difference`、`status=observed` 且存在非负 `consumedCredits` 时，显示 `💳 本次消耗：<consumedCredits> credits`；它是首次余额减完成后余额，0 为有效差值。
+   - 任一次余额缺失、账户不一致、完成后余额高于开始余额，或摘要缺失/无效时，只显示 `💳 本次消耗：暂不可用`；不得用 `chargedCredits`、标价、旧任务或钱包流水补写。
+   - 余额独立采用本次 `auth status` 成功返回的 `Remaining credits`；即使费用不可计算，查询成功仍显示 `💰 余额：<Remaining credits> credits`，查询失败（包括 `AUTH_STATUS_LOOKUP_FAILED`）才显示 `💰 余额：暂不可用`。
    - 不在用户可见交付中解释计费文件、回执、来源覆盖、文档哈希、工作区、命令或服务端状态。
 10. 上述最终状态查询失败、余额不足、配给或计费错误都**不得再次执行 `login`**，不得读取 session JSON、提取 token、构造 Bearer 请求或直接请求 Catalog-Billing、Telemetry；已完成的报告仍按本 Stage 交付。
 11. 交付完成后勾选 `SEARCH-5`。

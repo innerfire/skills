@@ -25,37 +25,67 @@ Stage 和 CLI 参考中的 `./if-libclaw` 表示当前平台的随包二进制�
 
 ## CLI 认证
 
-- 每个新的文献检索任务都必须先经过 `search-auth`（`SEARCH-0`）认证前置 Gate，再读取 `search-plan`。该 Gate 只执行一次 `auth status`，不创建任务工作区、计划或 TODO，不调用检索来源，也不产生计费。
-- `SEARCH-0` 未登录时，直接执行 `login`，展示验证链接、用户代码和操作示例，再调用 HITL 工具 `AskUserQuestion` 等待“已完成”；用户完成浏览器授权后，再执行一次 `auth status`。认证成功才进入检索计划与 Gate 1。不得先创建计划、展示 Gate 1 或访问检索来源，再要求用户登录。
-- 每个新的引用验真任务都必须先经过 `verification-auth`（`VERIFY-0`）认证前置 Gate，再读取 `verification-consent`。该 Gate 只执行一次 `auth status`，不读取文档、不创建任务工作区或 TODO、不调用转换/来源服务，也不产生计费。
-- `VERIFY-0` 未登录时，直接执行 `login`，展示验证链接、用户代码和操作示例，再调用 HITL 工具 `AskUserQuestion` 等待“已完成”；用户完成浏览器授权后，再执行一次 `auth status`。认证成功才进入三项影响披露。不得先展示披露、等待“继续”、创建工作区或推进 `VERIFY-1/2`，再要求用户登录。
-- `VERIFY-0` 是认证 Gate，不加入用户可见的 `VERIFY-1` 至 `VERIFY-5` 清单。`auth status` 已输出 `Logged in.` 时，会话预检通过；可选的账户状态查询未完成不得触发新的 `login`。
-- 本 Skill 面向用户的唯一登录入口是 `env -u LIBCLAW_OIDC_ISSUER -u LIBCLAW_OIDC_CLIENT_ID -u LIBCLAW_OIDC_AUDIENCE ./if-libclaw login`。这会清除旧的本地开发覆盖值，固定使用随包内置的 Catalog-Billing OIDC 配置。命令显示浏览器验证地址后立即退出；不要在用户回复中出现底层身份服务品牌，也不要要求用户在终端输入账号密码。
-- `LIBCLAW_AUTH_MODE=jwt` 时，CLI 仅从本地普通 session 文件取得 Bearer access token；不得读取、显示、转述或回退到 API Key / `libclaw.license`。
-- Agent 只能通过 `./if-libclaw auth status` 查询登录、配给和余额。**不得读取 session JSON、提取 access token、构造 Authorization header，或用 curl/HTTP 客户端直接请求 Catalog-Billing、Telemetry、转换或来源服务。**若 `auth status` 输出 `AUTH_STATUS_LOOKUP_FAILED` 或任何 status 错误，只报告该安全错误并停止；不得以直接请求端点作为“二次验证”，也不得声称取得了余额或配给结果。
-- `SEARCH-5` 或 `VERIFY-5` 的最终交付是唯一例外：在已完成的 CLI 产物旁读取安全 `billing-summary.json` 后，只执行一次 `./if-libclaw auth status` 获取新鲜的 `Remaining credits`。搜索只读取任务工作区根目录的这一份摘要，绝不扫描或相加数据库运行目录。若这次输出 `AUTH_STATUS_LOOKUP_FAILED`，仍可交付已完成报告和已 settled 的本次消耗，但必须将剩余点数标为“暂不可用”；不得再次执行 `login`、读取 session JSON、提取 token 或直接请求任何服务。
-- `legacy_api_key` 只作为内部兼容说明存在，不是本 Skill 的用户恢复路径。不得建议用户提供、获取、更换或迁移 API Key 或许可证，也不得扫描其它下载目录、旧 Skill 或旧 license 文件寻找替代凭据。
-- `auth status` 只显示非秘密身份、到期时间和可选配给/余额信息；`auth logout` 清理本地会话。两者都不会自动创建身份、Lago 或钱包资源。
-- 只有 `auth status` 明确输出 `Not logged in.` 时，才从 Skill 目录执行 `env -u LIBCLAW_OIDC_ISSUER -u LIBCLAW_OIDC_CLIENT_ID -u LIBCLAW_OIDC_AUDIENCE ./if-libclaw login`。业务命令返回 `AUTH_SESSION_REQUIRED` 时先在同一 Skill 目录执行一次 `./if-libclaw auth status`；只有该检查明确输出 `Not logged in.` 才进入登录流程。HTTP 401/403/409/422/503、余额、配给、计费、版本或下游服务错误都不得生成新的验证链接。
-- 所有平台都使用普通本地 JSON session 文件；不要求 Keychain、Secret Service、D-Bus、TTY、口令或特定文件权限。默认固定保存在当前随包二进制旁的 `./.libclaw/session.json`，因此每次 CLI 调用都必须从同一个 Skill 目录运行。常规调用不得重复设置 `LIBCLAW_AUTH_SESSION_FILE`；只有测试或多账号隔离明确需要其它绝对路径时才允许覆盖，并且 `login`、`auth status` 及后续所有 CLI 命令必须共同使用同一个覆盖值。不得使用每次运行都会变化的临时目录，也不得安装或修复任何凭据服务。
-- 部署覆盖值只有在用户或部署配置用字段名明确标注时才能使用；不得把未标注的第三个值猜测为 audience、client secret 或本地会话口令。CLI 是公开客户端，绝不接收 client secret；不明确的秘密值不得尝试、转述或写入命令。
-- 读取该次命令输出中的 `Verification URL:` 和 `User code:`；验证地址由身份服务返回，不得自行拼接、缩短或改写。所有 Stage 发起 `login` 后，用户可见回复必须使用以下模板；不添加原因、故障分析或额外认证问题：
+### 入口与会话判定
+
+每个新的文献检索任务都必须先经过 `search-auth`（`SEARCH-0`）认证前置 Gate；每个新的引用验真任务都必须先经过 `verification-auth`（`VERIFY-0`）认证前置 Gate。先在当前 Skill 目录执行一次对应平台的 `auth status`。这两个 Gate 不创建工作区、计划或 TODO，不读取验真文档、不访问检索/来源/转换服务，也不产生计费。会话确认后才进入检索计划或验真影响披露。
+
+| 本次 CLI 输出或事件 | 下一步 | 必须停止的位置 |
+|---|---|---|
+| `Logged in.` | 复用会话，进入当前 Stage 的后续步骤；CLI 在需要时续期 | 不再生成验证链接 |
+| `Not logged in.` | 按下表执行一次 `login`，展示原样验证链接，等待“已完成” | 用户确认之前 |
+| `login` 直接返回 `Logged in.` | 继续原 Stage，不编造链接、不提问“已完成” | 仍须遵守业务 Gate/Consent |
+| 用户选择或回复“已完成” | 只执行一次 `auth status`，成功才恢复原 Stage | pending、denied、expired 或不能确认会话时 |
+| `AUTH_SESSION_REQUIRED` | 先执行一次 `auth status`；明确 `Not logged in.` 才进入单次登录 | 不凭业务错误猜测登录状态 |
+| 401/403/409/422/503、余额、配给、计费、版本或来源错误 | 保留当前 Stage 和产物，按原 Stage 报告安全状态 | 不重新登录、不换凭据、不直接请求服务 |
+
+`auth status` 同时包含 `Logged in.` 和 `AUTH_STATUS_LOOKUP_FAILED` 时，会话状态与账户查询失败分开处理：不得重登、不得声称取得余额。认证 Gate 的首次预检按会话状态通过；用户网页登录并回复“已完成”后的单次复查若发生该错误，仍按原认证 Stage 暂停；已生成报告的最终交付仍可保留报告，余额标为未知。其他状态查询错误只报告安全状态并停止。
+
+### 当前平台登录命令
+
+默认采用授权码 + PKCE。CLI 是公开客户端，不接收 client secret，不要求终端输入账号密码，也不显示默认设备确认码。执行前按“平台二进制”选定原生命令；所有 Stage 的 `login` 示例都按本表替换，不在 Windows 执行 Unix `env -u`。
+
+| 平台 | 从 Skill 工作目录运行 |
+|---|---|
+| macOS arm64 | `env -u LIBCLAW_OIDC_ISSUER -u LIBCLAW_OIDC_CLIENT_ID -u LIBCLAW_OIDC_AUDIENCE ./if-libclaw login` |
+| macOS Intel / Linux | 使用同一组 `env -u`，把可执行文件替换为上方对应平台的原生二进制 |
+| Windows | `powershell.exe -NoProfile -Command "Remove-Item Env:LIBCLAW_OIDC_ISSUER,Env:LIBCLAW_OIDC_CLIENT_ID,Env:LIBCLAW_OIDC_AUDIENCE -ErrorAction SilentlyContinue; & '.\if-libclaw.exe' login"` |
+
+这些命令只在本次子进程中清除三项旧开发覆盖，使用随包公开配置，不改写用户持久配置。明确标注字段名的部署覆盖按部署配置处理；不得猜测未标注值的用途，不得尝试、转述或写入不明确的秘密值。CLI 显示链接后退出；浏览器与 CLI 应位于同一台电脑，回调或端口错误按安全错误停止，不自动切换登录协议。
+
+### 🔴 CHECKPOINT · 等待“已完成”
+
+从本次输出读取 `Verification URL:`，逐字展示，不拼接、缩短或改写。用户可见回复采用以下模板，不附加故障分析、身份服务品牌、认证参数或“是否现在启动”问题：
 
 ```text
 验证链接：[打开验证页面](<Verification URL>)
-用户代码：`<User code>`
 
 操作示例：
 
 1. 打开验证链接。
-2. 在网页中登录；若页面要求用户代码，输入上方代码。
-3. 授权完成后，回到这里回复"已完成"。
+2. 在网页中登录并完成授权。
+3. 回到这里回复“已完成”。
 ```
 
-- 发出该模板后，立即调用客户端的 HITL 工具 `AskUserQuestion`，问题只提示“完成网页登录与授权后，选择‘已完成’。”，唯一完成动作是“已完成”。调用后立即停止并等待；若客户端不提供 HITL 工具，才等待用户在对话中回复“已完成”。不得询问“我现在启动登录流程吗？”，也不得添加“当前未登录”或“需要先授权”。
-- 用户通过 `AskUserQuestion` 选择“已完成”，或在不支持 HITL 时回复“已完成”后，执行一次 `./if-libclaw auth status`；登录成功时自动恢复原 Stage。若结果为 pending、denied、expired、`AUTH_STATUS_LOOKUP_FAILED` 或任何 status 错误，只报告安全状态并停止，**不得通过读取 session 或直接 HTTP 请求自行验证**。不得在同一认证轮次再次执行 `login`，不得自行生成、覆盖或替换 device code；只有用户明确要求“重新登录”时才允许开始新一轮。
-- 认证恢复除登录后等待“已完成”的 `AskUserQuestion` 外，不得调用其它结构化提问工具；也不得询问用户是否拥有 OIDC 配置、API Key 或其它认证信息。不得建议用户提供、获取、更换或迁移 API Key 或许可证。
-- 不得向用户展示 scope、entitlement、license 文件路径、旧格式兼容性或身份服务品牌。新文献检索由 `SEARCH-0` 在 Gate 1 前完成会话预检；新引用验真由 `VERIFY-0` 在 Consent 前完成会话预检；其它登录恢复只在对应 Gate/Consent 已获得之后、或恢复一个已经获准但因认证暂停的任务时执行；不得借认证恢复绕过 Gate 或 Consent。
+展示后立即调用客户端可用的 HITL 工具（`AskUserQuestion` 或等价工具），唯一完成动作是“已完成”，然后停止等待；没有 HITL 工具时，等待新的用户对话回复。网页回调、`Login pending.`、TODO 或 Agent 自述都不代表用户确认。用户确认后只查一次状态，不能在同一轮重新 `login`；只有用户明确要求“重新登录”才开始新一轮。登录确认不等于检索 Gate 1、Gate 2 或验真 Consent 的批准。
+
+只有远程终端明确采用 `login --method device`，且本次 CLI 实际返回 `User code:` 时，才另附“用户代码：`<User code>`”，并在第 2 步说明输入该代码。不得为修复网页回调错误自行选择设备授权。
+
+### 会话路径与禁止事项
+
+- 所有平台都使用普通本地 JSON session 文件，默认在当前二进制旁的 `./.libclaw/session.json`。不要求 Keychain、Secret Service、D-Bus、TTY、口令或特定文件权限；不安装、修复凭据服务。所有命令从同一个 Skill 目录运行，不用 `cd` 串接目录。
+- 普通调用不设置 `LIBCLAW_AUTH_SESSION_FILE`；测试或多账号隔离确需覆盖时，全部相关命令共用同一个稳定绝对路径，不用每次变化的临时目录。
+- Agent 只能通过 CLI 查询身份、配给与余额。不得读取 session JSON、提取 token、构造 Authorization header，或用 curl/HTTP 客户端直连计费、Telemetry、转换或来源服务；CLI 内部使用 Bearer 不代表 Agent 可以提取凭据。
+- 不读取、转述、搜索或回退到 API Key、`libclaw.license`、旧 Skill、下载目录、`.env`、Shell 历史或其他凭据。`legacy_api_key` 仅供内部兼容，不是用户恢复路径。
+- 不得向用户展示 scope、entitlement、license 文件路径、旧格式兼容性或身份服务品牌；此规则覆盖所有认证回复和错误恢复，不只限于登录模板。
+- 认证恢复只问网页登录后的“已完成”；不询问认证配置、API Key、许可证或本地口令，不向回复、TODO、问题、文件名、日志或报告写入秘密值。原工作流的独立业务确认仍按 Stage 执行。
+- `auth logout` 清理本地会话；`login`、`auth status`、`auth logout` 均不自动创建身份、组织、钱包、配给或充值。
+
+### 任务余额记录
+
+仅在业务 Gate/Consent 已获准、任务工作区已创建后，第一次业务操作前执行一次 `auth status --billing-start "$TASK_WORKSPACE"`。首次余额包括失败记录都不随恢复或重检覆盖。完成报告和原任务完成命令后，交付前执行一次 `auth status --billing-finish "$TASK_WORKSPACE"`，CLI 等待 1 秒后查询并计算“首次余额 − 完成后余额”；这两条命令本身不扣款。
+
+只读当前任务根目录的安全 `billing-summary.json`：`source=balance_difference` 且 `status=observed` 时使用非负 `consumedCredits`，0 有效；无基线、查询失败、账户不一致或负差值显示“暂不可用”。本次查询成功的 `Remaining credits` 独立展示，不因费用未知隐藏余额。不使用 `chargedCredits`、钱包流水、标价或其他任务补写消耗；不为费用未知追加轮询、重跑业务或创建新扣费事件。余额差记录不是正式交付物，不链接或回显内部文件。
+
 
 ## 题名匹配说明
 
@@ -77,7 +107,7 @@ Stage 和 CLI 参考中的 `./if-libclaw` 表示当前平台的随包二进制�
 
 | Stage | 文件 | 完成依据 |
 |---|---|---|
-| `search-auth` | [STAGE.md](stages/search-auth/STAGE.md) | 会话已确认，或已交付验证链接并暂停等待用户完成浏览器授权。 |
+| `search-auth` | [STAGE.md](stages/search-auth/STAGE.md) | `auth status` 已确认会话；交付链接后仍停留本 Stage 等待确认。 |
 | `search-plan` | [STAGE.md](stages/search-plan/STAGE.md) | 计划可解析且 Gate 1 后收到新的明确确认 |
 | `search-execute` | [STAGE.md](stages/search-execute/STAGE.md) | 当前计划的检索完成，且 Gate 2 后收到用户选择 |
 | `search-report` | [STAGE.md](stages/search-report/STAGE.md) | 当前结果的 QC 与 CLI 报告实际存在并通过检查 |
@@ -91,7 +121,7 @@ Stage 和 CLI 参考中的 `./if-libclaw` 表示当前平台的随包二进制�
 
 | Stage | 文件 | 完成依据 |
 |---|---|---|
-| `verification-auth` | [STAGE.md](stages/verification-auth/STAGE.md) | 会话已确认，或已交付验证链接并暂停等待用户完成浏览器授权。 |
+| `verification-auth` | [STAGE.md](stages/verification-auth/STAGE.md) | `auth status` 已确认会话；交付链接后仍停留本 Stage 等待确认。 |
 | `verification-consent` | [STAGE.md](stages/verification-consent/STAGE.md) | 三项影响披露后收到新的明确确认 |
 | `verification-context` | [STAGE.md](stages/verification-context/STAGE.md) | 文档 context 有效，或粘贴输入已确认并形成 owner-only `reference-input/v1` |
 | `verification-batch` | [STAGE.md](stages/verification-batch/STAGE.md) | 文档输入的唯一 batch validation 为双 true；粘贴输入跳过本 Stage |

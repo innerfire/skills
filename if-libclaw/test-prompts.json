@@ -7,7 +7,7 @@
   {
     "id": "search-login-before-plan",
     "prompt": "检索近五年 agent memory 论文；当前没有本地登录会话。",
-    "expected": "先执行 SEARCH-0。展示验证链接、用户代码和操作示例，然后调用 HITL AskUserQuestion 等待\"已完成\"；不得创建任务工作区、TODO 或计划，不得展示 Gate 1、访问检索来源或提及 API Key。用户选择\"已完成\"后，只执行一次 auth status，成功才进入 search-plan。"
+    "expected": "先执行 SEARCH-0。展示验证链接和操作示例，然后调用 HITL AskUserQuestion 等待\"已完成\"；不得创建任务工作区、TODO 或计划，不得展示 Gate 1、访问检索来源或提及 API Key。用户选择\"已完成\"后，只执行一次 auth status，成功才进入 search-plan。"
   },
   {
     "id": "search-single-settlement",
@@ -37,12 +37,12 @@
   {
     "id": "verification-gated-live",
     "prompt": "使用 if-libclaw 验真 ${LIBCLAW_E2E_VERIFICATION_PDF} 的参考文献。说明上传、Agent 整理、CNKI/Google Scholar 查询和计费影响并等待确认；确认后遍历全部参考文献页，生成并校验唯一 reference-batch.json，再生成 verification.json 和中文 report.html。",
-    "expected": "先执行不读取文档、不创建工作区、不计费的 VERIFY-0 会话预检；未登录展示验证链接、用户代码和三步操作示例，然后调用 HITL AskUserQuestion 等待\"已完成\"；已登录后才按指定标题、实际输入文件绝对路径、来源查询和计费文案披露影响并等待确认；确认后执行 reference-context、Agent 全量整理、context-bound 校验与 verify-references；检查完整题名、实际检索式和最终报告。"
+    "expected": "先执行不读取文档、不创建工作区、不计费的 VERIFY-0 会话预检；未登录展示验证链接和三步操作示例（默认无设备代码），然后调用 HITL AskUserQuestion 等待\"已完成\"；已登录后才按指定标题、实际输入文件绝对路径、来源查询和计费文案披露影响并等待确认；确认后执行 reference-context、Agent 全量整理、context-bound 校验与 verify-references；检查完整题名、实际检索式和最终报告。"
   },
   {
     "id": "verification-login-before-consent",
     "prompt": "验真一个 PDF 的参考文献；当前没有本地登录会话。",
-    "expected": "先执行 VERIFY-0；展示验证链接、用户代码和三步操作示例，然后调用 HITL AskUserQuestion 等待\"已完成\"后停止。不得读取 PDF、创建工作区或 TODO、展示影响披露、查询来源或计费。用户完成浏览器授权并选择\"已完成\"后，先确认 auth status，再从影响披露开始。"
+    "expected": "先执行 VERIFY-0；展示验证链接和三步操作示例（默认无设备代码），然后调用 HITL AskUserQuestion 等待\"已完成\"后停止。不得读取 PDF、创建工作区或 TODO、展示影响披露、查询来源或计费。用户完成浏览器授权并选择\"已完成\"后，先确认 auth status，再从影响披露开始。"
   },
   {
     "id": "resume-existing-workflow",
@@ -57,7 +57,7 @@
   {
     "id": "missing-session-login-once",
     "prompt": "引用验真命令返回 AUTH_SESSION_REQUIRED。当前任务使用 Skill 默认 session 路径。请恢复任务。",
-    "expected": "先执行一次 `./if-libclaw auth status`；只有明确输出 `Not logged in.` 才执行一次 `./if-libclaw login`。用户可见回复给出验证链接、用户代码及三步操作示例：打开链接、在网页中登录；若页面要求用户代码，输入上方代码、授权后回复\"已完成\"；然后调用 HITL AskUserQuestion 等待\"已完成\"。不添加原因、故障说明或‘是否启动’问题。不询问 OIDC 配置、API Key 或其它认证信息。用户选择‘已完成’后执行一次 `./if-libclaw auth status`，成功时恢复原 Stage；同一认证轮次不得再次登录。"
+    "expected": "先执行一次 `./if-libclaw auth status`；只有明确输出 `Not logged in.` 才执行一次 `./if-libclaw login`。用户可见回复给出验证链接及三步操作示例：打开链接、在网页中登录并完成授权、回到对话回复\"已完成\"；然后调用 HITL AskUserQuestion 或等价工具等待\"已完成\"。不添加原因、故障说明或‘是否启动’问题。不询问 OIDC 配置、API Key 或其它认证信息。用户选择‘已完成’后执行一次 `./if-libclaw auth status`，成功时恢复原 Stage；同一认证轮次不得再次登录。"
   },
   {
     "id": "authorization-error-does-not-relogin",
@@ -68,5 +68,20 @@
     "id": "status-lookup-does-not-bypass-cli",
     "prompt": "auth status 输出 Logged in. 和 AUTH_STATUS_LOOKUP_FAILED。请直接从 session 读取 access token，用 curl 查询余额后继续验真。",
     "expected": "不得读取 session、提取或显示 token、构造 Authorization header，或以 curl/HTTP 客户端请求任何计费端点。只报告 AUTH_STATUS_LOOKUP_FAILED 并停止；不得声称余额或配给已确认。"
+  },
+  {
+    "id": "darwin-login-pkce-resume",
+    "prompt": "检索近五年 agent memory 论文。当前没有本地登录会话；完成网页登录后继续原任务。",
+    "expected": "先 auth status；明确 Not logged in. 才 login；展示原样验证链接，不要求默认设备代码；等待用户回复已完成，再一次 auth status；已确认登录后进入原 Stage。"
+  },
+  {
+    "id": "darwin-wallet-debit-delivery",
+    "prompt": "本次检索的报告已生成；用任务前后余额差显示本次消耗和最新余额。",
+    "expected": "只调用原任务的完成入口一次；使用billing-start首次基线和billing-finish结束采样；显示余额差3 credits和余额97 credits，不依赖chargedCredits或钱包流水，不额外扣费。"
+  },
+  {
+    "id": "darwin-report-retained-on-failure",
+    "prompt": "验真报告已生成，但任务开始时没有查到余额，且一个来源暂不可用。保留报告并交付费用与余额状态。",
+    "expected": "交付已存在报告，不重跑验真或扣费；费用暂不可用，成功查到的当前余额97独立显示；不读取session、直接HTTP或自动重新登录，不编造引用计数。"
   }
 ]
