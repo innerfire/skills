@@ -90,6 +90,20 @@ CLI 未设置认证模式时使用 JWT。生产 Telemetry 设置 `LIBCLAW_JWT_AU
 
 ---
 
+### Windows 回调监听与前台登录
+
+默认网页登录使用后台回调进程监听 `127.0.0.1:18451`。Windows 宿主明确允许 Job breakaway 时，后台进程使用该许可独立存活；若宿主设置退出时清理 Job 且不允许独立存活，返回 `OIDC_CALLBACK_HOST_RESTRICTED`，不生成无法持续监听的新链接，也不修改宿主限制。
+
+Windows 登录优先使用本机独立 PowerShell，不等待宿主限制报错后才选择它。WorkBuddy 的 PortableGit/Git Bash 或沙盒内再次运行 powershell.exe 仍可能继承宿主限制，不能视为已获得本机独立执行。仅使用宿主明确允许的本机入口；没有该入口时，提示用户用 Win+R 打开 powershell.exe -NoProfile，并在独立窗口切换到当前 Skill 的真实 Windows 绝对路径，再执行：
+
+```powershell
+.\if-libclaw.exe login --wait
+```
+
+保持该窗口打开，使用本次实际打印的验证链接完成网页登录。Agent 没有读到本机终端输出时不能编造链接，也不能在 PortableGit 中再启动一次登录；交付本机操作后等待“已完成”。该命令以前台方式保留监听，网页回调后退出；然后回复“已完成”，再执行一次 `.\if-libclaw.exe auth status`。`--wait` 不改变 PKCE 或交换 Token 的时机，也不默认切换设备授权；自动化 Agent 不应在短超时工具里启动这条阻塞命令。
+
+`OIDC_CALLBACK_UNAVAILABLE` 表示未完成授权的监听不可用。`auth status` 只报告错误，不自动重登或清除授权状态；用户明确要求重新登录时，再执行一次 `login`，CLI 检测到旧监听已退出后会替换失效 pending，并生成新链接。已经保存的网页授权结果即使不再监听也保留，继续由 `auth status` 交换 Token。存活检查仅访问本机回调、不使用代理，不发送账户凭据。
+
 ### `probe`
 
 验证遥测控制面生命周期（授权 → 心跳 → 完成），**不执行**实际搜索任务。
@@ -105,7 +119,7 @@ CLI 未设置认证模式时使用 JWT。生产 Telemetry 设置 `LIBCLAW_JWT_AU
 |------|--------|-------------|------|
 | `--api-key` | *（legacy_api_key 模式必填）* | `LIBCLAW_API_KEY` | legacy 模式的授权 API Key；`jwt` 模式使用本地会话，不读取或发送此值。 |
 | `--telemetry-url` | `https://libclaw.innerfire.ai:22943` | `LIBCLAW_TELEMETRY_URL` | 遥测服务地址 |
-| `--skill-version` | `0.3.7` | `LIBCLAW_DEV_VERSION` | 运行时版本标签 |
+| `--skill-version` | `0.3.9` | `LIBCLAW_DEV_VERSION` | 运行时版本标签 |
 | `--installation-id` | `runtime-probe` | `LIBCLAW_INSTALLATION_ID` | 安装标识 |
 | `--machine-id` | *（主机名）* | `LIBCLAW_MACHINE_ID` | 机器标识 |
 | `--databases` | `openalex` | — | 逗号分隔的数据库 ID |
@@ -129,7 +143,7 @@ CLI 未设置认证模式时使用 JWT。生产 Telemetry 设置 `LIBCLAW_JWT_AU
 | `--json` | `false` | — | 输出机器可读的 JSON 摘要 |
 | `--api-key` | *（legacy_api_key 模式可选）* | `LIBCLAW_API_KEY` | 仅 legacy 模式提供时查询本地 skill 版本；`jwt` 模式跳过该 API-key 查询。 |
 | `--telemetry-url` | `https://libclaw.innerfire.ai:22943` | `LIBCLAW_TELEMETRY_URL` | 遥测服务地址 |
-| `--skill-version` | `0.3.7` | `LIBCLAW_DEV_VERSION` | 本地 skill 版本标签 |
+| `--skill-version` | `0.3.9` | `LIBCLAW_DEV_VERSION` | 本地 skill 版本标签 |
 
 **输出示例：**
 
@@ -185,7 +199,7 @@ export PIP_INDEX_URL="https://<your-pypi-mirror>/simple"
 |------|--------|-------------|------|
 | `--api-key` | *（legacy_api_key 模式必填）* | `LIBCLAW_API_KEY` | legacy 模式的授权 API Key；`jwt` 模式使用本地会话，不读取或发送此值。 |
 | `--telemetry-url` | `https://libclaw.innerfire.ai:22943` | `LIBCLAW_TELEMETRY_URL` | 遥测服务地址 |
-| `--skill-version` | `0.3.7` | `LIBCLAW_DEV_VERSION` | 运行时版本标签 |
+| `--skill-version` | `0.3.9` | `LIBCLAW_DEV_VERSION` | 运行时版本标签 |
 | `--installation-id` | `runtime-prepare` | `LIBCLAW_INSTALLATION_ID` | 安装标识 |
 | `--machine-id` | *（主机名）* | `LIBCLAW_MACHINE_ID` | 机器标识 |
 | `--plan-file` | *（必填）* | — | Plan JSON 文件路径 |
@@ -221,7 +235,7 @@ export PIP_INDEX_URL="https://<your-pypi-mirror>/simple"
 |------|--------|-------------|------|
 | `--api-key` | *（legacy_api_key 模式必填）* | `LIBCLAW_API_KEY` | legacy 模式的授权 API Key；`jwt` 模式使用本地会话，不读取或发送此值。 |
 | `--telemetry-url` | `https://libclaw.innerfire.ai:22943` | `LIBCLAW_TELEMETRY_URL` | 遥测服务地址 |
-| `--skill-version` | `0.3.7` | `LIBCLAW_DEV_VERSION` | 运行时版本标签 |
+| `--skill-version` | `0.3.9` | `LIBCLAW_DEV_VERSION` | 运行时版本标签 |
 | `--installation-id` | `runtime-execute` | `LIBCLAW_INSTALLATION_ID` | 安装标识 |
 | `--machine-id` | *（主机名）* | `LIBCLAW_MACHINE_ID` | 机器标识 |
 | `--plan-file` | *（必填）* | — | Plan JSON 文件路径 |

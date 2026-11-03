@@ -32,7 +32,7 @@ Stage 和 CLI 参考中的 `./if-libclaw` 表示当前平台的随包二进制�
 | 本次 CLI 输出或事件 | 下一步 | 必须停止的位置 |
 |---|---|---|
 | `Logged in.` | 复用会话，进入当前 Stage 的后续步骤；CLI 在需要时续期 | 不再生成验证链接 |
-| `Not logged in.` | 按下表执行一次 `login`，展示原样验证链接，等待“已完成” | 用户确认之前 |
+| `Not logged in.` | 按下表的平台分支启动一次登录；实际返回链接时逐字展示，Windows 手动分支交付本机 PowerShell 操作，然后等待“已完成” | 用户确认之前 |
 | `login` 直接返回 `Logged in.` | 继续原 Stage，不编造链接、不提问“已完成” | 仍须遵守业务 Gate/Consent |
 | 用户选择或回复“已完成” | 只执行一次 `auth status`，成功才恢复原 Stage | pending、denied、expired 或不能确认会话时 |
 | `AUTH_SESSION_REQUIRED` | 先执行一次 `auth status`；明确 `Not logged in.` 才进入单次登录 | 不凭业务错误猜测登录状态 |
@@ -48,13 +48,31 @@ Stage 和 CLI 参考中的 `./if-libclaw` 表示当前平台的随包二进制�
 |---|---|
 | macOS arm64 | `env -u LIBCLAW_OIDC_ISSUER -u LIBCLAW_OIDC_CLIENT_ID -u LIBCLAW_OIDC_AUDIENCE ./if-libclaw login` |
 | macOS Intel / Linux | 使用同一组 `env -u`，把可执行文件替换为上方对应平台的原生二进制 |
-| Windows | `powershell.exe -NoProfile -Command "Remove-Item Env:LIBCLAW_OIDC_ISSUER,Env:LIBCLAW_OIDC_CLIENT_ID,Env:LIBCLAW_OIDC_AUDIENCE -ErrorAction SilentlyContinue; & '.\if-libclaw.exe' login"` |
+| Windows | 使用下方“Windows 本机 PowerShell 登录”分支，在本机独立 PowerShell 的真实 Skill 目录执行 `.\if-libclaw.exe login --wait`；不从 PortableGit/Git Bash 启动登录 |
 
-这些命令只在本次子进程中清除三项旧开发覆盖，使用随包公开配置，不改写用户持久配置。明确标注字段名的部署覆盖按部署配置处理；不得猜测未标注值的用途，不得尝试、转述或写入不明确的秘密值。CLI 显示链接后退出；浏览器与 CLI 应位于同一台电脑，回调或端口错误按安全错误停止，不自动切换登录协议。
+这些命令只在本次子进程中清除三项旧开发覆盖，使用随包公开配置，不改写用户持久配置。明确标注字段名的部署覆盖按部署配置处理；不得猜测未标注值的用途，不得尝试、转述或写入不明确的秘密值。默认后台模式显示链接后退出；Windows 本机 `login --wait` 保持窗口与监听直到回调结束。浏览器与 CLI 应位于同一台电脑，回调或端口错误按安全错误停止，不自动切换登录协议。
+
+### Windows 本机 PowerShell 登录
+
+Windows 缺少有效会话时，必须使用本机独立 PowerShell 登录，不在 WorkBuddy 的 PortableGit/Git Bash、沙盒 Bash、WSL 或短时命令工具内启动回调监听。PortableGit 的安装路径不能证明具体隔离方式；也不能把在该环境中套一层 `powershell.exe -Command` 当作已获得独立本机执行。
+
+仅在宿主明确提供并允许本机 PowerShell 执行入口时使用它，且保持登录进程直到网页回调完成；不得通过更换 Shell、创建隐藏进程或调整宿主策略绕过沙盒限制。只有 PortableGit/沙盒工具时，直接提示用户在本机用 Win+R 打开 `powershell.exe -NoProfile`，然后在这个独立窗口执行：
+
+```powershell
+Set-Location -LiteralPath '<当前 Skill 的真实 Windows 绝对路径>'
+Remove-Item Env:LIBCLAW_OIDC_ISSUER,Env:LIBCLAW_OIDC_CLIENT_ID,Env:LIBCLAW_OIDC_AUDIENCE -ErrorAction SilentlyContinue
+.\if-libclaw.exe login --wait
+```
+
+交付命令前必须把占位符替换为当前已知的真实 Skill 路径，不猜用户名、盘符或安装目录；路径未知时只询问 Skill 安装路径，不搜索凭据或复制 Skill 到临时目录。三项环境清除只影响新 PowerShell 进程，管理员明确配置的部署覆盖仍按部署约定处理。
+
+提示用户保持这个 PowerShell 窗口打开，使用终端实际显示的验证链接完成网页登录，再回到对话回复“已完成”。此手动分支没有可供 Agent 读取的 CLI 输出时，不编造或复用验证链接、不套用下方“验证链接”模板，不在 PortableGit 内补执行一次 `login`。交付本机操作后立即用 HITL 或对话等待“已完成”。
+
+用户确认后，Agent 仍只执行一次当前 Skill 的 Windows 原生 `.exe auth status`，使用与本机登录同一份二进制目录和会话；短时状态查询不创建回调监听。有获准的本机 PowerShell 工具时优先使用；现有工具若不能访问同一会话或不能确认状态，仅报告安全状态并停止，不把用户口头确认当作已登录，也不读取 session/token 或自动重登。
 
 ### 🔴 CHECKPOINT · 等待“已完成”
 
-从本次输出读取 `Verification URL:`，逐字展示，不拼接、缩短或改写。用户可见回复采用以下模板，不附加故障分析、身份服务品牌、认证参数或“是否现在启动”问题：
+仅在本次 CLI 实际返回链接时，从本次输出读取 `Verification URL:`，逐字展示，不拼接、缩短或改写。用户可见回复采用以下模板，不附加故障分析、身份服务品牌、认证参数或“是否现在启动”问题：
 
 ```text
 验证链接：[打开验证页面](<Verification URL>)
@@ -69,6 +87,8 @@ Stage 和 CLI 参考中的 `./if-libclaw` 表示当前平台的随包二进制�
 展示后立即调用客户端可用的 HITL 工具（`AskUserQuestion` 或等价工具），唯一完成动作是“已完成”，然后停止等待；没有 HITL 工具时，等待新的用户对话回复。网页回调、`Login pending.`、TODO 或 Agent 自述都不代表用户确认。用户确认后只查一次状态，不能在同一轮重新 `login`；只有用户明确要求“重新登录”才开始新一轮。登录确认不等于检索 Gate 1、Gate 2 或验真 Consent 的批准。
 
 只有远程终端明确采用 `login --method device`，且本次 CLI 实际返回 `User code:` 时，才另附“用户代码：`<User code>`”，并在第 2 步说明输入该代码。不得为修复网页回调错误自行选择设备授权。
+
+Windows 一开始就按本机 PowerShell 分支处理，不等待 `OIDC_CALLBACK_HOST_RESTRICTED` 才切换；出现该错误时停止并保持该分支，不能在短超时工具中阻塞等待，也不修改宿主限制。`OIDC_CALLBACK_UNAVAILABLE` 表示旧回调监听失效；停止并报告安全状态，不自动重登。只有用户明确要求重新登录才再次执行 `login`，由 CLI 替换失效 pending。网页授权已经保存但监听已结束时，仍按“已完成”后的单次 `auth status` 确认，不删除授权结果。
 
 ### 会话路径与禁止事项
 

@@ -12,6 +12,8 @@
 
 ## 行为
 
+Windows 的 `auth status` 必须使用当前 Skill 的原生 `if-libclaw.exe`。明确未登录后，先执行 `SKILL.md` 的“Windows 本机 PowerShell 登录”分支：使用获准的本机入口，或交付真实路径与 `.\if-libclaw.exe login --wait` 命令让用户在本机独立 PowerShell 执行，保持窗口打开并等待“已完成”。不在 PortableGit/Git Bash 或沙盒 Bash 启动登录，也不把其中再启动 `powershell.exe` 当作脱离宿主限制。用户手动登录时没有真实链接输出可读，不编造链接；确认后仍只查询一次同一会话。下方第 3 步的自动读取链接流程只适用于实际执行命令并收到链接的分支。
+
 1. 从当前平台的随包二进制所在 Skill 目录执行：
 
    ```bash
