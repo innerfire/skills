@@ -90,6 +90,8 @@ Remove-Item Env:LIBCLAW_OIDC_ISSUER,Env:LIBCLAW_OIDC_CLIENT_ID,Env:LIBCLAW_OIDC_
 
 Windows 一开始就按本机 PowerShell 分支处理，不等待 `OIDC_CALLBACK_HOST_RESTRICTED` 才切换；出现该错误时停止并保持该分支，不能在短超时工具中阻塞等待，也不修改宿主限制。`OIDC_CALLBACK_UNAVAILABLE` 表示旧回调监听失效；停止并报告安全状态，不自动重登。只有用户明确要求重新登录才再次执行 `login`，由 CLI 替换失效 pending。网页授权已经保存但监听已结束时，仍按“已完成”后的单次 `auth status` 确认，不删除授权结果。
 
+`AUTH_SESSION_BUSY` 是同一会话锁等待 30 秒超时，不等于端口占用；`AUTH_SESSION_LOCK_FAILED` 是锁初始化或文件访问失败，不能按占锁恢复。两者均只报告安全错误并停止，不自动重新登录、不删除 session/许可证/锁文件、不批量结束进程。新版 `login --wait` 在开始等待网页前已释放会话锁，不应仅因窗口还在等待就判定用户需要重启。
+
 ### 会话路径与禁止事项
 
 - 所有平台都使用普通本地 JSON session 文件，默认在当前二进制旁的 `./.libclaw/session.json`。不要求 Keychain、Secret Service、D-Bus、TTY、口令或特定文件权限；不安装、修复凭据服务。所有命令从同一个 Skill 目录运行，不用 `cd` 串接目录。

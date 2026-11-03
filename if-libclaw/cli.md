@@ -90,6 +90,13 @@ CLI 未设置认证模式时使用 JWT。生产 Telemetry 设置 `LIBCLAW_JWT_AU
 
 ---
 
+
+### 会话锁错误
+
+`AUTH_SESSION_BUSY` 只表示同一会话的锁在 30 秒内没有取得，不能据此判断回调端口被占用。`AUTH_SESSION_LOCK_FAILED` 表示锁初始化或文件访问失败，不得再解释成已有登录进程占用；报告安全错误并停止，不自动重登、不删除 session、许可证或锁文件、不批量结束进程。
+
+Windows 普通会话使用同目录 `.lock` 文件上的系统字节范围锁，不调用旧命名 Mutex 的 SID/ACL 初始化；锁文件存在不代表被占用，进程退出后由系统释放实际锁。`login --wait` 仅在初始化、写入 pending 状态时持锁，进入网页登录等待前释放锁；并发的 `auth status` 可返回 pending，而不用等待整个 10 分钟。Token 交换和续期仍按会话串行执行。
+
 ### Windows 回调监听与前台登录
 
 默认网页登录使用后台回调进程监听 `127.0.0.1:18451`。Windows 宿主明确允许 Job breakaway 时，后台进程使用该许可独立存活；若宿主设置退出时清理 Job 且不允许独立存活，返回 `OIDC_CALLBACK_HOST_RESTRICTED`，不生成无法持续监听的新链接，也不修改宿主限制。
@@ -119,7 +126,7 @@ Windows 登录优先使用本机独立 PowerShell，不等待宿主限制报错�
 |------|--------|-------------|------|
 | `--api-key` | *（legacy_api_key 模式必填）* | `LIBCLAW_API_KEY` | legacy 模式的授权 API Key；`jwt` 模式使用本地会话，不读取或发送此值。 |
 | `--telemetry-url` | `https://libclaw.innerfire.ai:22943` | `LIBCLAW_TELEMETRY_URL` | 遥测服务地址 |
-| `--skill-version` | `0.3.9` | `LIBCLAW_DEV_VERSION` | 运行时版本标签 |
+| `--skill-version` | `0.3.10` | `LIBCLAW_DEV_VERSION` | 运行时版本标签 |
 | `--installation-id` | `runtime-probe` | `LIBCLAW_INSTALLATION_ID` | 安装标识 |
 | `--machine-id` | *（主机名）* | `LIBCLAW_MACHINE_ID` | 机器标识 |
 | `--databases` | `openalex` | — | 逗号分隔的数据库 ID |
@@ -143,7 +150,7 @@ Windows 登录优先使用本机独立 PowerShell，不等待宿主限制报错�
 | `--json` | `false` | — | 输出机器可读的 JSON 摘要 |
 | `--api-key` | *（legacy_api_key 模式可选）* | `LIBCLAW_API_KEY` | 仅 legacy 模式提供时查询本地 skill 版本；`jwt` 模式跳过该 API-key 查询。 |
 | `--telemetry-url` | `https://libclaw.innerfire.ai:22943` | `LIBCLAW_TELEMETRY_URL` | 遥测服务地址 |
-| `--skill-version` | `0.3.9` | `LIBCLAW_DEV_VERSION` | 本地 skill 版本标签 |
+| `--skill-version` | `0.3.10` | `LIBCLAW_DEV_VERSION` | 本地 skill 版本标签 |
 
 **输出示例：**
 
@@ -199,7 +206,7 @@ export PIP_INDEX_URL="https://<your-pypi-mirror>/simple"
 |------|--------|-------------|------|
 | `--api-key` | *（legacy_api_key 模式必填）* | `LIBCLAW_API_KEY` | legacy 模式的授权 API Key；`jwt` 模式使用本地会话，不读取或发送此值。 |
 | `--telemetry-url` | `https://libclaw.innerfire.ai:22943` | `LIBCLAW_TELEMETRY_URL` | 遥测服务地址 |
-| `--skill-version` | `0.3.9` | `LIBCLAW_DEV_VERSION` | 运行时版本标签 |
+| `--skill-version` | `0.3.10` | `LIBCLAW_DEV_VERSION` | 运行时版本标签 |
 | `--installation-id` | `runtime-prepare` | `LIBCLAW_INSTALLATION_ID` | 安装标识 |
 | `--machine-id` | *（主机名）* | `LIBCLAW_MACHINE_ID` | 机器标识 |
 | `--plan-file` | *（必填）* | — | Plan JSON 文件路径 |
@@ -235,7 +242,7 @@ export PIP_INDEX_URL="https://<your-pypi-mirror>/simple"
 |------|--------|-------------|------|
 | `--api-key` | *（legacy_api_key 模式必填）* | `LIBCLAW_API_KEY` | legacy 模式的授权 API Key；`jwt` 模式使用本地会话，不读取或发送此值。 |
 | `--telemetry-url` | `https://libclaw.innerfire.ai:22943` | `LIBCLAW_TELEMETRY_URL` | 遥测服务地址 |
-| `--skill-version` | `0.3.9` | `LIBCLAW_DEV_VERSION` | 运行时版本标签 |
+| `--skill-version` | `0.3.10` | `LIBCLAW_DEV_VERSION` | 运行时版本标签 |
 | `--installation-id` | `runtime-execute` | `LIBCLAW_INSTALLATION_ID` | 安装标识 |
 | `--machine-id` | *（主机名）* | `LIBCLAW_MACHINE_ID` | 机器标识 |
 | `--plan-file` | *（必填）* | — | Plan JSON 文件路径 |
