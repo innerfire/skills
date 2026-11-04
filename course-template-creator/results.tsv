@@ -1,0 +1,2 @@
+timestamp	commit	skill	old_score	new_score	status	dimension	note	eval_mode
+2026-11-04T14:35	baseline	course-template-creator	-	67.4	baseline	-	初始基线评估（缺少系列查询选择机制、无反例黑名单、缺少显性检查点）	full_test
