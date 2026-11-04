@@ -8,6 +8,7 @@ Innerfire 的 Agent Skills 仓库。兼容 [Agent Skills](https://agentskills.io
 |---|---|
 | [`if-casdoor-account-admin`](if-casdoor-account-admin/) | 选租户后对话编排 Casdoor 账号增删改查、批量建号、重置密码；业务角色对应 Group。 |
 | [`if-course-template-creator`](if-course-template-creator/) | 按课程模板 V1 数据契约交互式生成课程目录和可导入 ZIP（不负责上传）。 |
+| [`if-libclaw`](if-libclaw/) | 通过随包 CLI 检索文献，或核验 Word、PDF 与粘贴参考文献的真实性。 |
 | [`if-student-outcome-submitter`](if-student-outcome-submitter/) | 学生登录后提交里程碑和实验报告（课程总体报告）。先预览，确认后再上传。 |
 | [`if-teacher-outcome-downloader`](if-teacher-outcome-downloader/) | 教师登录后准备批量下载学生里程碑和实验报告。当前只验收登录。 |
 | [`if-skills`](if-skills/) | 检查火光智能线上 skill 仓库的最新状态：比对本地已装 skill、发现新 skill、并在确认后安全安装/更新。 |
@@ -27,6 +28,7 @@ npx skills add innerfire/skills
 ```bash
 npx skills add innerfire/skills --skill if-casdoor-account-admin
 npx skills add innerfire/skills --skill if-course-template-creator
+npx skills add innerfire/skills --skill if-libclaw
 npx skills add innerfire/skills --skill if-student-outcome-submitter
 npx skills add innerfire/skills --skill if-teacher-outcome-downloader
 npx skills add innerfire/skills --skill if-skills

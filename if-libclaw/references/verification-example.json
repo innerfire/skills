@@ -1,0 +1,138 @@
+{
+  "run_id": "verification-demo-001",
+  "document_sha256": "f79b5e1ab68e8f71028f0a76f883e8df3f4512f224071a0bb20ef48fcf8d4c7a",
+  "rule_version": "citation-verification-v1.0",
+  "generated_at": "2026-07-22T12:00:00Z",
+  "completion_status": "completed",
+  "items": [
+    {
+      "reference": {
+        "id": "ref-001",
+        "raw_text": "Zhao W X, et al. A Survey of Large Language Models. 2023.",
+        "bibliography": {
+          "title": "A Survey of Large Language Models",
+          "authors": ["Wayne Xin Zhao"],
+          "year": 2023
+        },
+        "locations": [{"page": 3, "block_id": "paragraph-12", "marker": "[1]"}]
+      },
+      "status": "verified",
+      "reason": "Google Scholar returned a strong title, author, and year match with no critical conflict.",
+      "score": 0.98,
+      "evidence": [
+        {
+          "source": "google_scholar",
+          "query": "A Survey of Large Language Models",
+          "queried_at": "2026-07-22T11:59:01Z",
+          "status": "completed",
+          "candidates": [
+            {
+              "title": "A Survey of Large Language Models",
+              "authors": ["Wayne Xin Zhao"],
+              "year": 2023,
+              "url": "https://example.invalid/evidence/1"
+            }
+          ]
+        },
+        {"source": "cnki", "query": "TI=\"A Survey of Large Language Models\"", "queried_at": "2026-07-22T11:59:02Z", "status": "completed"}
+      ],
+      "candidate_matches": [
+        {
+          "source": "google_scholar",
+          "candidate_index": 0,
+          "title_score": 1,
+          "author_score": 1,
+          "year_score": 1,
+          "year_match": true,
+          "year_conflict": false,
+          "doi_exact": false,
+          "doi_conflict": false,
+          "composite_score": 1
+        }
+      ],
+      "review_recommended": false
+    },
+    {
+      "reference": {
+        "id": "ref-002",
+        "raw_text": "李明. 引文真实性核验方法研究. 2024.",
+        "bibliography": {"title": "引文真实性核验方法研究", "authors": ["李明"], "year": 2024},
+        "locations": [{"page": 7, "block_id": "paragraph-31", "marker": "[2]"}]
+      },
+      "status": "probable",
+      "reason": "A highly similar title was found, but venue and page metadata were incomplete.",
+      "score": 0.83,
+      "evidence": [
+        {
+          "source": "cnki",
+          "query": "TI=\"引文真实性核验方法研究\"",
+          "queried_at": "2026-07-22T11:59:03Z",
+          "status": "completed",
+          "candidates": [{"title": "引文真实性核验方法研究", "authors": ["李明"], "year": 2024}]
+        },
+        {"source": "google_scholar", "query": "引文真实性核验方法研究", "queried_at": "2026-07-22T11:59:04Z", "status": "completed"}
+      ],
+      "review_recommended": true
+    },
+    {
+      "reference": {
+        "id": "ref-003",
+        "raw_text": "Chen Y. Evidence Matching. 2020.",
+        "bibliography": {"title": "Evidence Matching", "authors": ["Chen Y"], "year": 2020}
+      },
+      "status": "conflict",
+      "reason": "Candidates were found, but the publication year conflicts with the reference.",
+      "score": 0.61,
+      "evidence": [
+        {"source": "cnki", "query": "TI=\"Evidence Matching\"", "queried_at": "2026-07-22T11:59:05Z", "status": "completed"},
+        {
+          "source": "google_scholar",
+          "query": "Evidence Matching",
+          "queried_at": "2026-07-22T11:59:06Z",
+          "status": "completed",
+          "candidates": [{"title": "Evidence Matching", "authors": ["Chen Y"], "year": 2019}]
+        }
+      ],
+      "review_recommended": true
+    },
+    {
+      "reference": {
+        "id": "ref-004",
+        "raw_text": "Wang L. Unindexed Citation Study. 2022.",
+        "bibliography": {"title": "Unindexed Citation Study", "authors": ["Wang L"], "year": 2022}
+      },
+      "status": "not_found",
+      "reason": "Both configured sources completed successfully and returned no credible candidate.",
+      "score": 0,
+      "evidence": [
+        {"source": "cnki", "query": "TI=\"Unindexed Citation Study\"", "queried_at": "2026-07-22T11:59:07Z", "status": "completed"},
+        {"source": "google_scholar", "query": "Unindexed Citation Study", "queried_at": "2026-07-22T11:59:08Z", "status": "completed"}
+      ],
+      "review_recommended": true
+    },
+    {
+      "reference": {
+        "id": "ref-005",
+        "raw_text": "Zhang Q. Source-blocked Reference. 2021.",
+        "bibliography": {"title": "Source-blocked Reference", "authors": ["Zhang Q"], "year": 2021}
+      },
+      "status": "unverifiable",
+      "reason": "CNKI was blocked by a challenge page, so a two-source not-found conclusion is not valid.",
+      "score": 0,
+      "evidence": [
+        {"source": "cnki", "query": "TI=\"Source-blocked Reference\"", "queried_at": "2026-07-22T11:59:09Z", "status": "unavailable", "error_code": "cnki_challenge"},
+        {"source": "google_scholar", "query": "Source-blocked Reference", "queried_at": "2026-07-22T11:59:10Z", "status": "completed"}
+      ],
+      "review_recommended": true
+    }
+  ],
+  "summary": {
+    "total": 5,
+    "verified": 1,
+    "probable": 1,
+    "conflict": 1,
+    "not_found": 1,
+    "unverifiable": 1
+  },
+  "warnings": ["One CNKI query was blocked by a challenge page."]
+}

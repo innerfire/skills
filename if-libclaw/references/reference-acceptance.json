@@ -1,0 +1,13 @@
+{
+  "version": "reference-acceptance/v1",
+  "document_sha256": "45e4144ff5a17f4ad54adc6c58a0d50dc8aa9def29a386a311f0512cbf38bff1",
+  "expected_start_page": 15,
+  "expected_end_page": 17,
+  "expected_reference_count": 35,
+  "expected_first_title": "A benchmark of expert-level academic questions to assess AI capabilities",
+  "expected_last_title": "MEM1: Learning to synergize memory and reasoning for efficient long-horizon agents",
+  "allowed_completion_statuses": [
+    "completed",
+    "partial"
+  ]
+}
