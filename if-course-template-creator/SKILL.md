@@ -1,5 +1,5 @@
 ---
-name: course-template-creator
+name: if-course-template-creator
 description: 按 xAI 课程模板 V1 数据契约交互式创建课程目录并压缩为可供教师端或 Payload Admin 导入的 ZIP。适用于“创建课程模板”、“生成课程包”、“course template”、“导出课程包”、“打包课程”等场景。扫描阶段必须打通 XAI_PAYLOAD_ORIGIN 并用 curl 查询公开工具目录与课程系列列表；课程系列必须向用户展示已有候选项供点选确认，严禁默认创建或自动推断，除非用户明确指明新建；里程碑归属、工具匹配等决策必须先询问用户再继续；不负责导入或上传。
 ---
 

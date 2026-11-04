@@ -1,4 +1,4 @@
-# casdoor-account-admin A 线测试资产
+# if-casdoor-account-admin A 线测试资产
 
 冻结版本 **v1.0（已冻结，2026-09-21）**。B 线（真实 Casdoor 回归）必须基于本文件，不得改场景语义、断言目标、预期口径或覆盖范围。
 
@@ -127,15 +127,15 @@
 
 | Script ID | Case ID 列表 | 执行层级(单测/接口/端到端) | 脚本文件路径 | 运行前置 | 执行命令/方式 | 输出物 |
 |---|---|---|---|---|---|---|
-| S-001 | C-001,C-002,C-003,C-004,C-005,C-006,C-007,C-008,C-009,C-010,C-011,C-012,C-015,C-017 | 单测 | casdoor-account-admin/scripts/casdoor.test.mjs | Node 18+ | `node --test casdoor-account-admin/scripts/casdoor.test.mjs` | TAP/node:test |
-| S-002 | C-013,C-014,C-015,C-016,C-018,C-019,C-020,C-021,C-022,C-023,C-024 | 单测 | casdoor-account-admin/tests/a-line.test.mjs | Node 18+；可读 SKILL.md | `node --test casdoor-account-admin/tests/a-line.test.mjs` | TAP/node:test |
+| S-001 | C-001,C-002,C-003,C-004,C-005,C-006,C-007,C-008,C-009,C-010,C-011,C-012,C-015,C-017 | 单测 | if-casdoor-account-admin/scripts/casdoor.test.mjs | Node 18+ | `node --test if-casdoor-account-admin/scripts/casdoor.test.mjs` | TAP/node:test |
+| S-002 | C-013,C-014,C-015,C-016,C-018,C-019,C-020,C-021,C-022,C-023,C-024 | 单测 | if-casdoor-account-admin/tests/a-line.test.mjs | Node 18+；可读 SKILL.md | `node --test if-casdoor-account-admin/tests/a-line.test.mjs` | TAP/node:test |
 
 ## 7) 测试脚本文件清单
 
 | 路径 | 执行命令 | 关联 Case ID |
 |---|---|---|
-| casdoor-account-admin/scripts/casdoor.test.mjs | `node --test casdoor-account-admin/scripts/casdoor.test.mjs` | C-001–C-012,C-015,C-017 |
-| casdoor-account-admin/tests/a-line.test.mjs | `node --test casdoor-account-admin/tests/a-line.test.mjs` | C-013–C-016,C-018–C-024 |
+| if-casdoor-account-admin/scripts/casdoor.test.mjs | `node --test if-casdoor-account-admin/scripts/casdoor.test.mjs` | C-001–C-012,C-015,C-017 |
+| if-casdoor-account-admin/tests/a-line.test.mjs | `node --test if-casdoor-account-admin/tests/a-line.test.mjs` | C-013–C-016,C-018–C-024 |
 
 ## 8) A 线脚本自测结果
 

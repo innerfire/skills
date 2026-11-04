@@ -1,5 +1,5 @@
 ---
-name: teacher-outcome-downloader
+name: if-teacher-outcome-downloader
 description: 以教师身份登录教学系统，为随后批量下载学生里程碑和实验报告做准备。用浏览器 PKCE 登录教师应用。适用于下载教学成果前的登录。当前只验收登录，不下载文件。不使用管理员或学生 client。
 ---
 
@@ -7,7 +7,7 @@ description: 以教师身份登录教学系统，为随后批量下载学生里�
 
 当前切片只做登录。日程选择和文件落盘等登录 A/B 通过后再做。
 
-真正发请求的只有本目录 `scripts/download.mjs`。不要手写 curl，不要把 access token 读进对话，不要复用 `casdoor-account-admin` 或 `student-outcome-submitter` 的 session。
+真正发请求的只有本目录 `scripts/download.mjs`。不要手写 curl，不要把 access token 读进对话，不要复用 `if-casdoor-account-admin` 或 `if-student-outcome-submitter` 的 session。
 
 ## 调用方式
 

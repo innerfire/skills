@@ -1,0 +1,3 @@
+timestamp	commit	skill	old_score	new_score	status	dimension	note	eval_mode
+2026-11-04T14:35	baseline	if-course-template-creator	-	67.4	baseline	-	初始基线评估（缺少系列查询选择机制、无反例黑名单、缺少显性检查点）	full_test
+2026-11-04T14:37	d7dccdd	if-course-template-creator	67.4	3-0 better	keep	课程系列查询选择与反例黑名单	3-0 clear better: 增加/v1/catalog/series查询选择机制、显性检查点与反例黑名单，解决禁止默认创建系列需求	paired

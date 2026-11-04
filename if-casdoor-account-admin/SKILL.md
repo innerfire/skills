@@ -1,5 +1,5 @@
 ---
-name: casdoor-account-admin
+name: if-casdoor-account-admin
 description: >-
   Operates Casdoor tenant accounts (create/list/update/delete) through the local
   OAuth CLI against https://auth.innerfireai.com. Use when the user wants to 开账号,

@@ -1,4 +1,4 @@
-# student-outcome-submitter A 线测试资产
+# if-student-outcome-submitter A 线测试资产
 
 冻结版本 **v1.0（已冻结，2026-09-23）**。B 线必须沿用这里的场景语义、断言目标和预期口径，不得为了让实现通过而改断言。
 
@@ -8,7 +8,7 @@ mock 通过不代表产品通过。真实提交以 B 线为准。
 
 - 目标功能：学生账号经浏览器 PKCE 登录后，在对话里选定正在学习的日程和一项任务，预览确认，再提交里程碑或实验报告。实验报告就是课程总体报告 `course_report`，一门课一份，不挂章。
 - 包含范围：学生应用 PKCE 配置；未登录不发请求；日程状态门禁；任务投影与点名；提交预检；无 `--yes` 不 POST；确认后恰好一次 multipart；幂等键；错误码；凭据不进入输出；session 文件权限。
-- 不包含范围：`SKILL.md` 文案；真实浏览器换票；真实 Payload 写入（这些是 B 线）；报名；下载模板；按目录批量匹配；教师代交；评价；复用 `casdoor-account-admin` 的 session 或 clientId。
+- 不包含范围：`SKILL.md` 文案；真实浏览器换票；真实 Payload 写入（这些是 B 线）；报名；下载模板；按目录批量匹配；教师代交；评价；复用 `if-casdoor-account-admin` 的 session 或 clientId。
 - 风险优先级：P0 凭据泄漏、未确认写入、未开放仍提交、把失败当成已提交；P1 任务认错、重交未提示、幂等键漂移、分页丢数据；P2 帮助文案与扩展名清单。
 - 依赖与约束：A 线只用本地 Node 24、fixture JSON、`global fetch` mock。不访问网络，不读真实 `~/.config`。默认 Casdoor endpoint `https://auth.innerfireai.com`。redirect 固定 `http://127.0.0.1:18766/callback`，忽略环境变量覆盖。学生 clientId 无默认值，禁止落到管理员 client `f9000a01deab6f84d57c`。Payload origin 无默认值，尾部 `/` 去掉。
 
@@ -132,7 +132,7 @@ mock 通过不代表产品通过。真实提交以 B 线为准。
 
 | Script ID | Case ID 列表 | 执行层级 | 脚本文件路径 | 运行前置 | 执行命令 | 输出物 |
 |---|---|---|---|---|---|---|
-| S-001 | C-001–C-022 | 单测 | student-outcome-submitter/tests/a-line.test.mjs | Node 24 | `node --test student-outcome-submitter/tests/a-line.test.mjs` | TAP/node:test |
+| S-001 | C-001–C-022 | 单测 | if-student-outcome-submitter/tests/a-line.test.mjs | Node 24 | `node --test if-student-outcome-submitter/tests/a-line.test.mjs` | TAP/node:test |
 
 `SKILL.md` 硬规则不在本轮 Case 里。等 skill 正文落地后另加用例，不回头改 C-001–C-022 的口径。
 
@@ -140,9 +140,9 @@ mock 通过不代表产品通过。真实提交以 B 线为准。
 
 | 路径 | 执行命令 | 关联 Case ID |
 |---|---|---|
-| student-outcome-submitter/tests/a-line.test.mjs | `node --test student-outcome-submitter/tests/a-line.test.mjs` | C-001–C-022 |
-| student-outcome-submitter/tests/fixtures/schedules.json | 由 S-001 读取 | D-001 |
-| student-outcome-submitter/tests/fixtures/experience-learning.json | 由 S-001 读取 | D-002 |
+| if-student-outcome-submitter/tests/a-line.test.mjs | `node --test if-student-outcome-submitter/tests/a-line.test.mjs` | C-001–C-022 |
+| if-student-outcome-submitter/tests/fixtures/schedules.json | 由 S-001 读取 | D-001 |
+| if-student-outcome-submitter/tests/fixtures/experience-learning.json | 由 S-001 读取 | D-002 |
 
 ## 8) A 线脚本自测结果
 
