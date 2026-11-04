@@ -1,5 +1,5 @@
 ---
-name: if-ifas-cms-admin
+name: if-ifas-admin
 description: >-
   以管理员（admin）或运营（operator）身份登录并管理 ifAS Center 门户 CMS 内容（智能体 agents、Skill 安装包与目录 skills、专题 topics、轮播 banners、标签 tags、媒体库 media、动态显隐 feeds）。底层通过 @innerfire/auth-cli 完成浏览器回环授权，经本地零依赖脚本执行草稿创建、本地 Skill 目录自动打包上传、版本升级、上线发布与安全下架。适用于“上架智能体”、“上传/发布 Skill 到 CMS”、“更新门户专题/Banner/标签”、“隐藏门户动态”、“ifas cms 运营管理”、“upload skill/agent to ifas cms”。不负责管理 admin-users 后台账号，也不执行任何物理硬删除。
 ---

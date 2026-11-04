@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * ifAS Center CMS Admin & Operations CLI (`if-ifas-cms-admin`).
+ * ifAS Center CMS Admin & Operations CLI (`if-ifas-admin`).
  * Zero external runtime dependencies (Node.js >= 20 built-ins only).
  *
  * Authentication & session storage are delegated to `@innerfire/auth-cli`:

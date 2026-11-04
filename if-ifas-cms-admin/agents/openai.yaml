@@ -1,4 +1,0 @@
-interface:
-  display_name: ifAS 门户 CMS 运营管理
-  short_description: 管理员或运营登录后新增、修改、发布与下架 ifAS 门户智能体、Skill、专题、Banner、标签和动态
-  default_prompt: 使用 $if-ifas-cms-admin 通过本地脚本登录 ifAS CMS 并完成智能体、Skill、专题、Banner、标签或动态的预览与变更提交；所有写操作必须先不带 --yes 输出预览，经用户确认后再附带 --yes 执行，严禁物理硬删除。
