@@ -11,7 +11,7 @@
  */
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync } from "node:fs";
+import { existsSync, realpathSync } from "node:fs";
 import { mkdir, readdir, readFile, rm, stat } from "node:fs/promises";
 import { homedir } from "node:os";
 import { basename, extname, join, posix, relative, resolve } from "node:path";
@@ -22,8 +22,9 @@ export const DEFAULTS = Object.freeze({
   prodOrigin: "https://ifasccms.innerfireai.com",
   prodProjectKey: "ifas-cms",
   localProjectKey: "ifas-cms-local",
-  maxUploadBytes: 50 * 1024 * 1024,
+  maxUploadBytes: 100 * 1024 * 1024,
   timeoutMs: 30_000,
+  uploadTimeoutMs: 180_000,
 });
 
 const ALLOWED_MIMES = Object.freeze({
@@ -188,7 +189,9 @@ export async function cmsFetch(cfg, session, { method = "GET", path, body, heade
       method: upperMethod,
       headers: mergedHeaders,
       body: payloadBody,
-      signal: AbortSignal.timeout(DEFAULTS.timeoutMs),
+      signal: AbortSignal.timeout(
+        body instanceof FormData ? DEFAULTS.uploadTimeoutMs : DEFAULTS.timeoutMs,
+      ),
     });
   } catch (err) {
     throw fail(`无法连接 CMS (${cfg.cmsOrigin}): ${err.message}`, "unreachable");
@@ -743,7 +746,7 @@ export async function buildCleanSkillZip(skillDir) {
   }));
   const zipBuffer = createZipArchive(archiveEntries);
   if (zipBuffer.length > DEFAULTS.maxUploadBytes) {
-    throw fail(`打包后的 ZIP 超过 50MB 上限 (${zipBuffer.length} bytes)`, "invalid_input");
+    throw fail(`打包后的 ZIP 超过 100MB 上限 (${zipBuffer.length} bytes)`, "invalid_input");
   }
 
   const sha256 = createHash("sha256").update(zipBuffer).digest("hex");
@@ -820,7 +823,7 @@ export async function prepareMediaInput(cfg, session, valueOrPath, { expectedKin
     throw fail(`媒体文件为空: ${absPath}`, "invalid_input");
   }
   if (fileStat.size > DEFAULTS.maxUploadBytes) {
-    throw fail(`文件大小超过 50MB 限制: ${absPath}`, "invalid_input");
+    throw fail(`文件大小超过 100MB 限制: ${absPath}`, "invalid_input");
   }
 
   const ext = extname(absPath).toLowerCase();
@@ -903,7 +906,7 @@ export async function uploadOrReuseMediaBuffer(
 
   const form = new FormData();
   form.append("_payload", JSON.stringify({ alt: String(alt || safeFilename).slice(0, 200) }));
-  form.append("file", new Blob([buffer], { type: mimeType }), safeFilename);
+  form.append("file", new File([buffer], safeFilename, { type: mimeType }));
 
   const created = await cmsFetch(
     cfg,
@@ -2365,6 +2368,9 @@ async function main() {
   }
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(realpathSync(resolve(process.argv[1]))).href
+) {
   await main();
 }

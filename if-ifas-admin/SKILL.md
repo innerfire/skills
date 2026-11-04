@@ -124,7 +124,7 @@ node "<skill-dir>/scripts/ifas-cms.mjs" <原命令参数...> --yes
 | `code = "missing_screenshots"`（发布缺 2 张截图） | 向用户索要 2 张界面截图路径（`.png`/`.jpg`/`.webp`）或媒体 UUID | 征得用户同意后改传 `--status draft` 先保存草稿，待补齐截图后再 `update --status published` |
 | `code = "invalid_tag"`（标签不存在或已停用） | 执行 `tags list` 列出当前 `type` 与 `category` 分组下的可用标签请用户重选 | 若用户确认需新增标签，先走 `tags create`（预览 → `--yes`）创建后再关联 |
 | `code = "ambiguous_match"`（同名记录多于 1 条） | 展示错误详情 `details.candidates` 中的 `id`、`_status`、`enabled` 供用户指定 | 改用唯一 `--id <uuid>` 重新执行预演，禁止盲选第一条 |
-| `code = "unreachable"` 或文件超 50MB / 非法格式 | 检查本地文件路径、扩展名（仅限 `.jpg`/`.jpeg`/`.png`/`.webp`/`.zip`）及文件体积 ≤50MB | 中止写入并保留本地文件原状，向用户报告具体超限文件或网络错误原因 |
+| `code = "unreachable"` 或文件超 100MB / 非法格式 | 检查本地文件路径、扩展名（仅限 `.jpg`/`.jpeg`/`.png`/`.webp`/`.zip`）及文件体积 ≤100MB | 中止写入并保留本地文件原状，向用户报告具体超限文件或网络错误原因 |
 
 ---
 

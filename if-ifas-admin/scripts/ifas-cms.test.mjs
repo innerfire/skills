@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
 import {
+  DEFAULTS,
   buildCleanSkillZip,
   cmsFetch,
   executeCommand,
@@ -43,6 +44,7 @@ describe("ifas-cms CLI runtime & security boundaries", () => {
     assert.equal(prod.cmsOrigin, "https://ifasccms.innerfireai.com");
     assert.equal(prod.projectKey, "ifas-cms");
     assert.equal(prod.isDefaultProd, true);
+    assert.equal(DEFAULTS.maxUploadBytes, 100 * 1024 * 1024);
 
     const local = loadRuntimeConfig({ IFAS_CMS_ORIGIN: "http://127.0.0.1:3001/" });
     assert.equal(local.cmsOrigin, "http://127.0.0.1:3001");

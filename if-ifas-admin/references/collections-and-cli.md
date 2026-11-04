@@ -33,7 +33,7 @@
 | 字段 | 类型 | 必填 / 约束 | 说明 |
 |---|---|---|---|
 | `fromDir` (CLI 专用) | 本地目录路径 | 目录内须含 `SKILL.md` | 自动排除 `.git`、`node_modules`、`tests`、`.env*`、`results.tsv`、`test-prompts.json`、`*.test.*` 打包 ZIP 并提取元数据 |
-| `packageFile` | upload (`media`) | 可选，仅 `.zip`（≤50MB） | 绑定后 CMS `syncSkillPackageInfo` 自动回填 `downloadUrl` 与历史包大小 |
+| `packageFile` | upload (`media`) | 可选，仅 `.zip`（≤100MB） | 绑定后 CMS `syncSkillPackageInfo` 自动回填 `downloadUrl` 与历史包大小 |
 | `downloadUrl` | string | 可选，`http(s)://` 或 `/...` | 上传 `packageFile` 后自动同步，也可传外部稳定链接 |
 | `applicableScenarios` | string | 可选 | 适用场景文本（`--scenarios`） |
 | `runtimeEnvironment` | string | 可选，≤300 字 | 运行环境说明（`--runtime`，如 `Node.js 20+`） |
@@ -61,7 +61,7 @@
 - 已被任何智能体/Skill（含草稿与回收站）引用的标签不可删除，只能通过 `tags update --id <id> --enabled false --yes` 停用。
 
 ### 1.6 `media`（媒体库）
-- 允许格式：`.jpg` / `.jpeg` / `.png` / `.webp` / `.zip`，单文件上限 **50MB**。
+- 允许格式：`.jpg` / `.jpeg` / `.png` / `.webp` / `.zip`，单文件上限 **100MB**。
 - 自动去重：脚本上传前计算本地文件 `SHA-256` 并查询 `media.contentSha256`；命中同哈希媒体时自动复用已有 `mediaId`，避免重复上传 OSS（除非显式传 `--force-upload`）。
 - ASCII 文件名归一化：含中文或空格的本地文件名会自动转为 `<prefix>-<sha256前12位>.<ext>` 上传，避免 OSS `CopyObject` 编码报错，原文件名保留在 `alt` 中。
 
