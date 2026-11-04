@@ -1,5 +1,5 @@
 ---
-name: student-outcome-submitter
+name: if-student-outcome-submitter
 description: 以学生身份提交里程碑和实验报告（课程总体报告）。用浏览器 PKCE 登录学生应用，列出正在学习的日程和任务，预览后经脚本上传。适用于交作业、重交成果、查看待交任务。不负责建课、报名、评分，也不使用管理员 token。
 ---
 
@@ -84,7 +84,7 @@ node "<skill>/scripts/submit.mjs" submit --schedule <scheduleId> --task <taskId>
 
 ## 硬规则
 
-- 所有 HTTP 都走 `scripts/submit.mjs`。不要复用 `casdoor-account-admin` 的 session。
+- 所有 HTTP 都走 `scripts/submit.mjs`。不要复用 `if-casdoor-account-admin` 的 session。
 - 没有 `--yes` 的 `submit` 只是预览。
 - 一次命令只提交一个任务。说明和文件至少有一项。
 - 不报名、不下载模板、不按目录批量匹配、不写评价、不替教师代交。

@@ -1,4 +1,4 @@
-# teacher-outcome-downloader A 线（登录切片）
+# if-teacher-outcome-downloader A 线（登录切片）
 
 冻结版本 **v0.1-auth**。这一轮只冻结登录，不包含日程选择和文件下载。B 线必须沿用这里的断言，不得为了让实现通过而改口径。
 
@@ -8,7 +8,7 @@ mock 通过不代表产品通过。真实登录以 B 线为准。
 
 - 包含：教师 Public Client 的 PKCE 授权 URL、固定回调端口、未登录不发请求、教师日程列表探测、凭据不回显、session 文件权限。
 - 不包含：按日程下载、目录命名、浏览器换票、真实 Casdoor。
-- 授权地址默认 `https://auth.innerfireai.com`，与学生端 `student-outcome-submitter`、管理端 `casdoor-account-admin` 相同。
+- 授权地址默认 `https://auth.innerfireai.com`，与学生端 `if-student-outcome-submitter`、管理端 `if-casdoor-account-admin` 相同。
 - clientId 固定 `2a06575699b7fff7736f`。禁止落到管理端 `f9000a01deab6f84d57c` 或学生端 `415e7652f294f1923793`。
 - 回调固定 `http://127.0.0.1:18767/callback`。忽略环境变量改端口。管理端是 18765，学生端是 18766。
 - scope 为 `openid profile email`，不含 `offline_access`。这与教师 SPA、学生 skill 一致；管理端多出的 `offline_access` 不带到这里。

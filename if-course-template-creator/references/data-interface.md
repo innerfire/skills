@@ -44,8 +44,16 @@ visibility: personal
 | `schemaVersion` | integer | 必须为 `1`                                              |
 | `name`          | string  | 必填，trim 后非空                                       |
 | `summary`       | string  | 必填，trim 后非空                                       |
-| `seriesName`    | string  | 必填，使用可跨环境匹配的系列名称，不写 `seriesId`       |
+| `seriesName`    | string  | 必填，使用可跨环境匹配的系列名称，不写 `seriesId`。必须通过接口查询供用户选择，禁止默认创建，除非用户明确指示新建 |
 | `visibility`    | enum    | `personal` 或 `shared`；Admin 导入时服务端固定为 shared |
+
+确定课程系列时，从部署环境的公开接口查询已有启用系列，无需 API key 或登录：
+
+```sh
+curl --fail --silent --show-error "${XAI_PAYLOAD_ORIGIN%/}/v1/catalog/series"
+```
+
+响应同样使用统一 envelope，候选项位于 `data.items`，每项包含 `seriesId`、`name`、`description` 等。创建模板时必须向用户展示候选项列表供点选，严禁默认新建系列；仅在用户明确指示新建系列时方可填写新系列名称。不要将 `seriesId` 写入 YAML。
 
 `chapter.yaml`：
 

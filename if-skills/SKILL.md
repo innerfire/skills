@@ -82,7 +82,7 @@ WorkBuddy `~/.workbuddy/skills/<name>`；③ `diff -r` 校验两处都字节一�
 - 让 WorkBuddy 重新加载该 skill（新装的 SKILL.md 需要被扫描到才会出现在 Skill 列表）。
 - 读一下新 skill 的 SKILL.md，看它要哪些 env / 密钥。
 - ⚠️ **重点复查 `XAI_PAYLOAD_ORIGIN` 冲突**（见 install-external-skill 的已装记录）：
-  `course-template-creator` 要它指向 aixmng，而 `student-outcome-submitter` 要它指向 aixstu。
+  `if-course-template-creator` 要它指向 aixmng，而 `if-student-outcome-submitter` 要它指向 aixstu。
   若新装的 skill 也读这个变量，先确认语义，必要时调用时**就地覆盖**而非改 `~/.zshrc`：
   ```bash
   XAI_PAYLOAD_ORIGIN=https://aixstu.innerfireai.com node <skill>/scripts/<cli>.mjs <command> --json

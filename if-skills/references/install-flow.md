@@ -18,8 +18,8 @@ cp -R /tmp/innerfire-skills-sync/<name>/. ~/.workbuddy/skills/<name>/
 
 WorkBuddy 扫描 `~/.workbuddy/skills/*/SKILL.md`，把每个含 SKILL.md 的目录当成 skill。
 若把备份放在 `skills/` 内（哪怕名字是 `.xxx.bak`），会被当成**第二个同名 skill**，
-`Skill` 工具可能加载到备份里的旧版。已实踩：加载 `course-template-creator` 时 base directory
-指向了 `~/.workbuddy/skills/.course-template-creator.bak.20260918`。
+`Skill` 工具可能加载到备份里的旧版。已实踩：加载 `if-course-template-creator` 时 base directory
+指向了 `~/.workbuddy/skills/.if-course-template-creator.bak.20260918`。
 
 ✅ 正确落点：`~/.workbuddy/_skill-backups/` 与 `~/.agents/_skill-backups/`。
 
@@ -46,7 +46,7 @@ diff -r /tmp/innerfire-skills-sync/<name> ~/.agents/skills/<name>
 - 明文不落文件，一律 macOS 钥匙串：`security add-generic-password -a "$USER" -s <SERVICE> -w '<key>' -U`
 - 读 key 类变量需从 `~/.zshrc` 取新值（Bash 工具环境是启动快照，改 zshrc 不影响当前会话）：
   `VAR="$(zsh -i -c 'printenv VAR' 2>/dev/null)"`
-- ⚠️ `XAI_PAYLOAD_ORIGIN` 被 `course-template-creator`（要 aixmng）与
-  `student-outcome-submitter`（要 aixstu）抢用，env 优先于持久化配置，会导致学生端静默提交到错误服务器。
+- ⚠️ `XAI_PAYLOAD_ORIGIN` 被 `if-course-template-creator`（要 aixmng）与
+  `if-student-outcome-submitter`（要 aixstu）抢用，env 优先于持久化配置，会导致学生端静默提交到错误服务器。
   新 skill 若也读此变量，先核对语义，必要时调用时就地覆盖，不要改 `~/.zshrc`。
 - 换 origin ≠ 数据等价：HTTP 200 不代表内容一致，换源后必须重新核对业务数据条数。
